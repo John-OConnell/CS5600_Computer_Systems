@@ -172,7 +172,12 @@ int main(){
 		// loop through each line adding numbers to temp array
 		while( num != NULL)
 		{
-			arr[j] = atoi(num);
+			int temp = atoi(num);
+			if (temp == 0)
+			{
+			fputs("Invalid number detected!\n", stderr);
+			}
+			arr[j] = temp;
 			num = strtok(NULL, " ");
 			j++;
 		}
