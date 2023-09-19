@@ -65,11 +65,11 @@ int countLines(FILE* file){
 	}
 
 	int lineCount = 0;
-	char ch;
+	int ch;
 
 	while((ch=fgetc(file))!=EOF) 
 	{
-		if(ch=='\n')
+		if((char)ch=='\n')
 		{
 			lineCount++;
 		}
