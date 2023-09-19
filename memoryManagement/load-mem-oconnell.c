@@ -1,5 +1,5 @@
 /*
-* OConnellJ.CS5600.LearnC.c / Memory Management
+* load-mem-oconnell.c / Memory Management
 *
 * John O'Connell / CS5600 / Northeastern University
 * Fall 2023 / Sep 16, 2023
@@ -17,6 +17,14 @@ typedef struct dynamicBlock{
 
 }dynBlock;
 
+/*
+ * Allocates a dynBlock struct with an integer array of input size
+ * 
+ * @param size: the size of the integer array inside of the dynBlock struct
+ *
+ * @return d: a pointer to the newly created dynBlock struct
+ *
+ */
 dynBlock* allocDynBlock(int size){
 
 	dynBlock* d = (dynBlock*)malloc(sizeof(dynBlock) + sizeof(int) * size);
@@ -25,6 +33,13 @@ dynBlock* allocDynBlock(int size){
 	return d;
 }
 
+/*
+ * Copies an integer array into a dynBlock struct
+ *
+ * @param d: a pointer to the dynBlock struct
+ * @param arr: the array to be stored in the dynBlock struct
+ * 
+ */
 void storeMem2Blk(dynBlock* d, int* arr){
 	
 	for (int i = 0; i < d->size; i++)
@@ -34,6 +49,14 @@ void storeMem2Blk(dynBlock* d, int* arr){
 	return;
 }
 
+/*
+ * Counts the number of lines in a file
+ *
+ * @param file: a pointer to the file
+ *
+ * @return lineCount: the number of lines in the file
+ * 
+ */
 int countLines(FILE* file){
 	if(file==NULL)
 	{
@@ -52,9 +75,20 @@ int countLines(FILE* file){
 		}
 	}
 
+	// move pointer back to start of file
+	rewind(file);
+
 	return lineCount;
 }
 
+/*
+ * Counts the number of words in a string
+ * 
+ * @param line: the input string
+ *
+ * @return count: the number of words in the string
+ * 
+ */
 int countWords(char* line){
 	int count = 0;
 	for (int i = 0; line[i] != '\0'; i++)
@@ -66,6 +100,14 @@ int countWords(char* line){
 	return count;
 }
 
+/*
+ * Prints the integer arrays stored in each dynBlock from an
+ * input array of dynBlocks
+ *
+ * @param blocks: an array of dynBlock structs
+ * @param size: the size of the blocks array
+ * 
+ */
 void printBlocks(dynBlock* blocks[], int size){
 
 	for (int i = 0; i < size; i++)
@@ -80,6 +122,13 @@ void printBlocks(dynBlock* blocks[], int size){
 
 }
 
+/*
+ * Frees all dynBlocks structs in an array of dynBlocks
+ *
+ * @param blocks: an array of dynBlock structs
+ * @param size: the size of the blocks array
+ * 
+ */
 void freeBlocks(dynBlock* blocks[], int size){
 	
 	for (int i = 0; i < size; i++)
@@ -90,57 +139,59 @@ void freeBlocks(dynBlock* blocks[], int size){
 
 int main(){
 
+	// open file
 	FILE* fp = fopen("blocks.data", "r");
 
-	int lineCount = countLines(fp);
-
-	rewind(fp);
+	// test for file not existing
+        if (fp == NULL)
+	{	
+              printf("Error! Could not open file\n");
+              return -1;
+	}
 	
+	// initializing necessary variables	
+	int lineCount = countLines(fp);
 	dynBlock* lines[lineCount];
-
 	char line[256];
-
 	int i = 0;
 	
+	// loop through file to process
 	while (fgets(line, sizeof(line), fp))
 	{ 
-		//printf("%s", line);
+		// remove newline character and get word count
 		line[strcspn(line, "\n")] = 0;
 		int count = countWords(line);
-		//printf("%d\n", count);
 
+		// initialize dynBlock struct
 		dynBlock* newBlock = allocDynBlock(count);
 		
 		int arr[count];
 		char* num = strtok(line, " ");
 		int j = 0;
+
+		// loop through each line adding numbers to temp array
 		while( num != NULL)
 		{
-			//printf("%s\n", num);
 			arr[j] = atoi(num);
 			num = strtok(NULL, " ");
 			j++;
 		}
 		
+		// store temp array into dynBlock integer array
 		storeMem2Blk(newBlock, arr);
+
 		lines[i] = newBlock;
 		i++;
 	}
 
+	// print the integer array stored in all dynBlocks
 	printBlocks(lines, lineCount);
+
+	// free all dynBlock structs created
 	freeBlocks(lines, lineCount);
-
+	
+	// close the file
 	fclose(fp);
-
-
-	//int arr[4] = {1, 2, 3, 4};
-	//dynBlock* myBlock = allocDynBlock(4);
-	//storeMem2Blk(myBlock, arr);
-	//for (int i = 0; i < myBlock->size; i++)
-	//{
-	//	printf("%d", myBlock->block[i]);
-	//}
-	//printf("\n");
 
 	return 0;
 }
