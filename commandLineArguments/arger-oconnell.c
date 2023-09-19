@@ -11,6 +11,7 @@
 
 int main(int argc, char* argv[]) {
 	
+	// check that correct # of arguments are passed in
 	if (argc < 3)
 	{
 		printf("INVALID INPUT - See Below for Help\n\n");
@@ -18,10 +19,12 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
+	// get necessary variables from input
 	char* option = argv[1];
 	int in_len = argc - 2;
 	char* input[in_len];	
 
+	// process input
 	if (mystrcmp(option, "-u") == 0)
 	{
 		to_upper(argc, argv);

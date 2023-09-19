@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include "arger-oconnell-helper.h"
 
+/*
+ * Prints the help message for the arger-oconnell program
+ * 
+ */
 void print_help(){
 	printf("arger-oconnell. (2023 Sep 12)\n\n");
 	printf("Usage: arger-oconnell (arguments)");
@@ -21,6 +25,17 @@ void print_help(){
 	printf("  -h  or  --h   Print this help message.\n");
 }
 
+/*
+ * Compares two strings
+ *
+ * @param str1: the first string to be compared
+ * @param str2: the second string to be compared
+ *
+ * @return returns less than, equal to, or greater than 0
+ * 	   if str1 is lexographically less than, greater
+ * 	   than, or equal to str2
+ * 
+ */
 int mystrcmp(const char* str1, const char* str2){
 
 	const unsigned char *l1 = (const unsigned char *) str1;
@@ -36,9 +51,17 @@ int mystrcmp(const char* str1, const char* str2){
 			return p1 - p2;
 		}
 	} while (p1 == p2);
+
 	return p1 - p2;
 }
 
+/*
+ * Converts a string to all uppercase and prints the result
+ *
+ * @param argc: the number of words in the string
+ * @param argv: the string itself
+ * 
+ */
 void to_upper(int argc, char* argv[]){
 
 	for (int i = 2; i < argc; i++)
@@ -60,10 +83,18 @@ void to_upper(int argc, char* argv[]){
 		{
 			printf("%s\n", argv[i]);
 		}
-	}	
+	}
+	
 	return;
 }
 
+/*
+ * Converts a string to all lowercase and prints the result
+ *
+ * @param argc: the number of words in the string
+ * @param argv: the string itself
+ * 
+ */
 void to_lower(int argc, char* argv[]){
 
 	for (int i = 2; i < argc; i++)
@@ -85,9 +116,19 @@ void to_lower(int argc, char* argv[]){
 		{
 			printf("%s\n", argv[i]);
 		}
-	}	
+	}
+
 	return;
 }
+
+/*
+ * Converts the first letter of each word of a string to uppercase
+ * and the rest to lowercase and prints the result
+ *
+ * @param argc: the number of words in the string
+ * @param argv: the string itself
+ * 
+ */
 
 void to_cap(int argc, char* argv[]){
 
@@ -114,6 +155,8 @@ void to_cap(int argc, char* argv[]){
 		{
 			printf("%s\n", argv[i]);
 		}
-	}	
+	}
+
 	return;
 }
+
