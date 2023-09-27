@@ -194,17 +194,20 @@ void freeQ(queue_t* queue) {
     }
 
     node_t* iteratorNode = queue->head_p;
-    //void* iteratorData = iteratorNode->data;
+    void* iteratorData = iteratorNode->data;
 
     while(iteratorNode != NULL)
     {
         node_t* tempNode = iteratorNode;
-        //void* tempData = iteratorData;
+        void* tempData = iteratorData;
 
         iteratorNode = iteratorNode->next_p;
-        //iteratorData = iteratorNode->data;
+        if (iteratorNode != NULL)
+        {
+            iteratorData = iteratorNode->data;
+        }
 
-        //free(tempData);
+        free(tempData);
         free(tempNode);
     }
 
