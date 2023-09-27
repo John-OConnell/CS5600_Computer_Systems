@@ -206,7 +206,7 @@ void freeQ(queue_t* queue) {
         {
             iteratorData = iteratorNode->data;
         }
-
+        
         free(tempData);
         free(tempNode);
     }

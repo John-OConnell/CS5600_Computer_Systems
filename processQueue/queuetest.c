@@ -62,37 +62,37 @@ int unittest3() {
     printf("Actual:   ");
     printProcessQ(testQ);
 
-    // if(add2q(testQ, testProc2) != 1)
-    // {
-    //     return 0;
-    // }
-    // printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2||");
-    // printf("Actual: ");
-    // printProcessQ(testQ);
+    if(add2q(testQ, testProc2) != 1)
+    {
+        return 0;
+    }
+    printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2||\n");
+    printf("Actual:   ");
+    printProcessQ(testQ);
 
-    // if(add2q(testQ, testProc3) != 1)
-    // {
-    //     return 0;
-    // }
-    // printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2|| -> ||ID: 3 , Priority: 3||");
-    // printf("Actual: ");
-    // printProcessQ(testQ);
+    if(add2q(testQ, testProc3) != 1)
+    {
+        return 0;
+    }
+    printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2|| -> ||ID: 3 , Priority: 3||\n");
+    printf("Actual:   ");
+    printProcessQ(testQ);
 
-    // if(add2q(testQ, testProc4) != 1)
-    // {
-    //     return 0;
-    // }
-    // printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2|| -> ||ID: 3 , Priority: 3|| -> ||ID: 4 , Priority: 4||");
-    // printf("Actual: ");
-    // printProcessQ(testQ);
+    if(add2q(testQ, testProc4) != 1)
+    {
+        return 0;
+    }
+    printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2|| -> ||ID: 3 , Priority: 3|| -> ||ID: 4 , Priority: 4||\n");
+    printf("Actual:   ");
+    printProcessQ(testQ);
 
-    // if(add2q(testQ, testProc5) != 1)
-    // {
-    //     return 0;
-    // }
-    // printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2|| -> ||ID: 3 , Priority: 3|| -> ||ID: 4 , Priority: 4|| -> ||ID: 5 , Priority: 5||");
-    // printf("Actual: ");
-    // printProcessQ(testQ);
+    if(add2q(testQ, testProc5) != 1)
+    {
+        return 0;
+    }
+    printf("Expected: ||ID: 1 , Priority: 1|| -> ||ID: 2 , Priority: 2|| -> ||ID: 3 , Priority: 3|| -> ||ID: 4 , Priority: 4|| -> ||ID: 5 , Priority: 5||\n");
+    printf("Actual:   ");
+    printProcessQ(testQ);
 
     freeQ(testQ);
     return 1;
@@ -105,7 +105,7 @@ void runUnitTests() {
     numPassed += unittest2();
     numPassed += unittest3();
 
-    printf("*** %d / 2 UNIT TESTS PASSED ***\n", numPassed);
+    printf("*** %d / 3 UNIT TESTS PASSED ***\n", numPassed);
 
     return;
 }
