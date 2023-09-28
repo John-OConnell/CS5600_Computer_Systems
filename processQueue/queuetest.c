@@ -339,6 +339,8 @@ int unittest6() {
     }
     free(pop);
 
+    free(testQ);
+
     return 1;
 }
 
