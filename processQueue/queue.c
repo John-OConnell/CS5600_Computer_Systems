@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include "queue.h"
 
+/*
+ * Creates a queue struct that can hold anything
+ * 
+ */
 queue_t* createQ() {
     queue_t* queue = (queue_t*)malloc(sizeof(queue_t));
 
@@ -25,6 +29,15 @@ queue_t* createQ() {
     return queue;
 }
 
+/*
+ * Creates a struct that represents a process
+ *
+ * @param id: process identifier
+ * @param name: process name
+ * @param runtime: cumulative process runtime
+ * @param priority: process priority
+ * 
+ */
 process_t* createProc(int id, char* name, long runtime, int priority) {
     process_t* proc = (process_t*)malloc(sizeof(process_t));
 
@@ -41,10 +54,16 @@ process_t* createProc(int id, char* name, long runtime, int priority) {
     return proc;
 }
 
-// add a new element to the end of the queue
-// Returns 1 on success
-// Returns 0 on failure (i.e. new element is NULL)
-// Returns -1 if queue is NULL.
+/*
+ * Add a new element to the end of the queue
+ * Returns 1 on success
+ * Returns 0 on failure (i.e. new element is NULL)
+ * Returns -1 if queue is NULL
+ * 
+ * @param queue: the queue to add to
+ * @param element: element that will be stored in a node and added to queue
+ * 
+ */
 int add2q(queue_t* queue, void* element) {
     if (queue == NULL)
     {
@@ -55,12 +74,12 @@ int add2q(queue_t* queue, void* element) {
         return 0;
     }
     
+    // create a node and add element to data of node
     node_t* node = (node_t*)malloc(sizeof(node_t));;
-
     node->data = element;
-
     node->next_p = NULL;
 
+    // account for case when queue is empty
     if (queue->count == 0)
     {
         queue->head_p = node;
@@ -75,10 +94,15 @@ int add2q(queue_t* queue, void* element) {
     }
 
     queue->count++;
-
     return 1;
 }
 
+/*
+ * Removes and returns the data within the node at the front of the queue
+ * 
+ * @param queue: the queue to pop from
+ * 
+ */
 void* popQ(queue_t* queue) {
     if (queue == NULL)
     {
@@ -93,6 +117,7 @@ void* popQ(queue_t* queue) {
     void* data = queue->head_p->data;
     node_t* temp = queue->head_p;
 
+    // account for case when only one node in queue
     if (queue->count == 1)
     {
         queue->head_p = NULL;
@@ -105,12 +130,16 @@ void* popQ(queue_t* queue) {
     }
     
     queue->count--;
-
     free(temp);
-
     return data;
 }
 
+/*
+ * Removes and returns the process with the highest priority in the queue
+ * 
+ * @param queue: the queue to remove a process from
+ * 
+ */
 process_t* rmProcess(queue_t* queue) {
     if (queue == NULL)
     {
@@ -125,6 +154,7 @@ process_t* rmProcess(queue_t* queue) {
     node_t* tempNode = queue->head_p;
     process_t* tempProc = (process_t*) tempNode->data;
 
+    // account for case when only one node in queue
     if (queue->count == 1)
     {
         queue->head_p = NULL;
@@ -135,6 +165,8 @@ process_t* rmProcess(queue_t* queue) {
         node_t* iteratorNode = tempNode->next_p;
         process_t* iteratorProc = iteratorNode->data;
 
+        // loop through queue and save process with "highest" priority
+        // (i.e lowest priority number)
         while (iteratorNode != NULL)
         {
             if (iteratorProc->priority < tempProc->priority)
@@ -176,9 +208,14 @@ process_t* rmProcess(queue_t* queue) {
     return tempProc;
 }
 
-// Queue Size
-// Queries the current size of a queue
-// Returns -1 if the queue is NULL.
+
+/*
+ * Queries the current size of the queue
+ * Returns -1 if the queue is NULL
+ * 
+ * @param queue: the queue to get the size of
+ * 
+ */
 int qsize(queue_t* queue) {
     if (queue == NULL)
     {
@@ -190,6 +227,12 @@ int qsize(queue_t* queue) {
     }
 }
 
+/*
+ * Frees all nodes in a queue and the queue itself
+ * 
+ * @param queue: the queue to free
+ * 
+ */
 void freeQ(queue_t* queue) {
     if (queue == NULL)
     {
@@ -222,6 +265,12 @@ void freeQ(queue_t* queue) {
 
 }
 
+/*
+ * Prints all processes in a queue
+ * 
+ * @param queue: the queue print
+ * 
+ */
 void printProcessQ(queue_t* queue) {
     if (queue == NULL)
     {
@@ -237,6 +286,7 @@ void printProcessQ(queue_t* queue) {
     {
         node_t* tempNode = queue->head_p;
         process_t* tempProc = (process_t*) tempNode->data;
+        
         while(tempNode->next_p != NULL)
         {
             printf("||ID: %d , Priority: %d|| -> ", (int)tempProc->identifier, (int)tempProc->priority);

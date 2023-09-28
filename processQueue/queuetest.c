@@ -1,5 +1,5 @@
 /*
-* queuetest.h / Process Queue
+* queuetest.c / Process Queue
 *
 * John O'Connell / CS5600 / Northeastern University
 * Fall 2023 / Sep 27, 2023
@@ -11,6 +11,7 @@
 #include <string.h>
 #include "queue.h"
 
+// Test 1: test the createQ() function
 int unittest1() {
     printf("-- Running Unit Test 1: Test createQ() --\n");
 
@@ -27,6 +28,7 @@ int unittest1() {
     return 0;
 }
 
+// Test 2: test the createProc() function
 int unittest2() {
     printf("-- Running Unit Test 2: Test createProc() --\n");
 
@@ -43,6 +45,7 @@ int unittest2() {
     return 0;
 }
 
+// Test 3: test the add2q() function
 int unittest3() {
     printf("-- Running Unit Test 3: Test add2q() --\n");
 
@@ -98,6 +101,7 @@ int unittest3() {
     return 1;
 }
 
+// Test 4: test the popQ() function
 int unittest4() {
     printf("-- Running Unit Test 4: Test popQ() --\n");
 
@@ -178,6 +182,7 @@ int unittest4() {
     return 1;
 }
 
+// Test 5: test the rmProcess() function
 int unittest5() {
     printf("-- Running Unit Test 5: Test rmProcess() --\n");
 
@@ -258,6 +263,7 @@ int unittest5() {
     return 1;
 }
 
+// Test 6: test the qsize() function
 int unittest6() {
     printf("-- Running Unit Test 6: Test qsize() --\n");
 
@@ -360,7 +366,6 @@ void runUnitTests() {
 }
 
 int main() {
-
     runUnitTests();
     return 0;
 }
