@@ -143,7 +143,10 @@ process_t* rmProcess(queue_t* queue) {
                 tempProc = iteratorProc;
             }
             iteratorNode = iteratorNode->next_p;
-            iteratorProc = iteratorNode->data;
+            if (iteratorNode != NULL)
+            {
+                iteratorProc = iteratorNode->data;
+            }
         }
 
         // process is at front of queue
@@ -193,25 +196,29 @@ void freeQ(queue_t* queue) {
         exit(1);
     }
 
-    node_t* iteratorNode = queue->head_p;
-    void* iteratorData = iteratorNode->data;
-
-    while(iteratorNode != NULL)
+    if(queue->count != 0)
     {
-        node_t* tempNode = iteratorNode;
-        void* tempData = iteratorData;
+        node_t* iteratorNode = queue->head_p;
+        void* iteratorData = iteratorNode->data;
 
-        iteratorNode = iteratorNode->next_p;
-        if (iteratorNode != NULL)
+        while(iteratorNode != NULL)
         {
-            iteratorData = iteratorNode->data;
+            node_t* tempNode = iteratorNode;
+            void* tempData = iteratorData;
+
+            iteratorNode = iteratorNode->next_p;
+            if (iteratorNode != NULL)
+            {
+                iteratorData = iteratorNode->data;
+            }
+
+            free(tempData);
+            free(tempNode);
         }
-        
-        free(tempData);
-        free(tempNode);
     }
 
     free(queue);
+    return;
 
 }
 
@@ -219,6 +226,12 @@ void printProcessQ(queue_t* queue) {
     if (queue == NULL)
     {
         printf("ERROR: Queue is NULL\n");
+        return;
+    }
+    else if (queue->count == 0)
+    {
+        printf("Queue is empty!\n");
+        return;
     }
     else
     {
@@ -235,4 +248,3 @@ void printProcessQ(queue_t* queue) {
         printf("||ID: %d , Priority: %d||\n", (int)tempProc->identifier, (int)tempProc->priority);
     }
 }
-
