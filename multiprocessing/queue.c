@@ -242,20 +242,11 @@ void freeQ(queue_t* queue) {
     if(queue->count != 0)
     {
         node_t* iteratorNode = queue->head_p;
-        void* iteratorData = iteratorNode->data;
 
         while(iteratorNode != NULL)
         {
             node_t* tempNode = iteratorNode;
-            void* tempData = iteratorData;
-
             iteratorNode = iteratorNode->next_p;
-            if (iteratorNode != NULL)
-            {
-                iteratorData = iteratorNode->data;
-            }
-
-            free(tempData);
             free(tempNode);
         }
     }
