@@ -34,11 +34,15 @@ void print_help(){
  * @return word: a random word generated using rand() function
  * 
  */
-const char* genRandWord(){
+char* genRandWord(){
     
     int length = (rand() % 10 + 1);
 
     char* word = (char*)malloc((length + 1) * sizeof(char));
+    if(word == NULL)
+    {
+        return NULL;
+    }
     
     for(int i = 0; i < length; i++)
     {

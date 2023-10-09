@@ -8,4 +8,4 @@
 
 void print_help();
 
-const char* genRandWord();
+char* genRandWord();

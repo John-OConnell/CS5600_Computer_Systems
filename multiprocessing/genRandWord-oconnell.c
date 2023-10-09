@@ -61,9 +61,10 @@ int main(int argc, char* argv[]) {
 	// write to file passed in
 	for (int i = 0; i < numRand; i++)
 	{
-		// char word[] = genRandWord();
+		char* word = genRandWord();
 		// fprintf(fp,"%s\n", word);
-        fprintf(fp,"%s\n", genRandWord());
+        fprintf(fp,"%s\n", word);
+        free(word);
 	}
 
 	// close file
