@@ -6,20 +6,15 @@
 #
 #
 
-all: genRandWord multithreading cipher
-
+all: genRandWord multithreading
 
 genRandWord: genRandWord-oconnell.c genRandWord-helper.c
 	@gcc genRandWord-oconnell.c genRandWord-helper.c -o genRandWord
 
 multithreading: multithreading.c
-	@ gcc multithreading.c queue.c polybius.c -o multithread
-
-cipher: polybius.c cipher.c
-	@gcc polybius.c cipher.c -o cipher
-
+	@ gcc multithreading.c multithreading-helper.c queue.c polybius.c -o multithread
 
 clean:
-	@rm -f genRandWord multithread cipher
-	@touch genRandWord-oconnell.c genRandWord-helper.c multithreading.c polybius.c cipher.c
+	@rm -f genRandWord multithread
+	@touch genRandWord-oconnell.c genRandWord-helper.c multithreading.c multithreading-helper.c polybius.c 
 

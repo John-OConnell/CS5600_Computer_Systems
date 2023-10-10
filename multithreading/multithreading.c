@@ -11,63 +11,27 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include <pthread.h>
 #include "queue.h"
-#include "polybius.h"
+#include "multithreading-helper.h"
 
 #define BATCH_SIZE 100
 
-/*
- * Prints the help message for the multiprocessing program
- * 
- */
-void print_help_multi(){
-	printf("multithreading. (2023 Oct 8)\n\n");
-	printf("Usage: multithread <file_name>\n");
-}
-
-/*
- * Invokes the cipher program as a subprocess
- *
- * @param inputFileName: file that the function will read from
- * @param outputFileName: file that the function will pipe to
- * 
- */
-void* invokeCipher(void* arg) {
-    char* inputFileName = (char*)arg;
-    char outputFileName[256];
-
-    // Generate a unique output file for the ciphered batch
-    time_t current_time = time(NULL);
-    snprintf(outputFileName, sizeof(outputFileName), "output_%ld.txt", current_time);
-
-    char command[256];
-    snprintf(command, sizeof(command), "./cipher_program < %s > %s", inputFileName, outputFileName);
-    system(command);
-
-    return NULL;
-}
-
 int main(int argc, char* argv[]) {
-	
-	// check for correct input
-	if (argc != 2)
-	{
-		printf("INVALID INPUT - See Below for Help\n\n");
-		print_help_multi();
-		return -1;
-	}
+    // check for correct input
+    if (argc != 2) {
+        printf("INVALID INPUT - See Below for Help\n\n");
+        print_help_multi();
+        return -1;
+    }
 
-	// set necessary file variables
+    // set necessary file variables
     char* fileName = argv[1];
-	FILE* fp;
+    FILE* fp;
 
-	// open the file in the correct mode
-	fp = fopen(fileName, "r");
-    if (fp == NULL)
-    {
+    // open the file in the read mode
+    fp = fopen(fileName, "r");
+    if (fp == NULL) {
         perror("Error opening file");
         return -1;
     }
@@ -78,28 +42,27 @@ int main(int argc, char* argv[]) {
     // set line buffer
     char line[256];
 
-	// read each word from file and add it into the queue
-    while (fgets(line, sizeof(line), fp) != NULL)
-    {
+    // read each word from the file and add it into the queue
+    while (fgets(line, sizeof(line), fp) != NULL) {
         line[strcspn(line, "\n")] = '\0'; // remove the newline character
         char* allocatedLine = strdup(line); // allocate memory for the line and copy the content
-        if (allocatedLine == NULL)
-        {
+        if (allocatedLine == NULL) {
             perror("Memory allocation failed");
             return -1;
         }
         add2q(Q, allocatedLine);
     }
 
-	// close file
-	fclose(fp);    
+    // close the file
+    fclose(fp);
 
-    // create unique output file names using timestamps
+    // create unique output file names
     time_t current_time;
     char batchFileName[256];
     char outputFileName[256];
+    pthread_t threads[BATCH_SIZE];
 
-    int processCount = 0;
+    int batchCount = 0;
     char* word;
     int wordCount = 0;
     FILE* batchFile = NULL;
@@ -112,7 +75,7 @@ int main(int argc, char* argv[]) {
         {
             // generate a unique batch file name
             current_time = time(NULL);
-            snprintf(batchFileName, sizeof(outputFileName), "batch_%d.txt", processCount);
+            snprintf(batchFileName, sizeof(outputFileName), "batch_%d.txt", batchCount);
 
             // open the batch file for writing
             batchFile = fopen(batchFileName, "w");
@@ -128,80 +91,35 @@ int main(int argc, char* argv[]) {
         free(word);
         wordCount++;
 
-        // if we've reached BATCH_SIZE, invoke the cipher program for the batch
+         // if we've reached BATCH_SIZE, invoke the cipher function for the batch
         if (wordCount >= BATCH_SIZE)
         {
             fclose(batchFile);
 
-            // generate a unique output file for the ciphered batch
-            current_time = time(NULL);
-            snprintf(outputFileName, sizeof(outputFileName), "output_%d_%ld.txt", processCount, current_time);
-
-            // create a subprocess to invoke the cipher program for the batch
-            pid_t pid = fork();
-
-            if (pid < 0)
-            {
-                perror("Fork failed");
-                return -1;
-            }
-            else if (pid == 0) // child process
-            {
-                invokeCipher(batchFileName, outputFileName);
-                exit(0);
-            } 
-            else
-            {   // parent process
-                // wait for the child process to complete
-                int status;
-                waitpid(pid, &status, 0);
-
-                // clean up the batch file and update variables
-                remove(batchFileName);
-                wordCount = 0;
-                processCount++;
-            }
+            pthread_create(&threads[batchCount], NULL, invokeCipher, batchFileName);
+            batchCount++;
         }
     }
 
-    // if there are remaining words in the last batch, invoke the cipher program
+    // if there are remaining words in the last batch, invoke the cipher function
     if (wordCount > 0) 
     {
             fclose(batchFile);
-
-            // generate a unique output file for the ciphered batch
-            current_time = time(NULL);
-            snprintf(outputFileName, sizeof(outputFileName), "output_%d_%ld.txt", processCount, current_time);
-
-            // create a subprocess to invoke the cipher program for the last batch
-            pid_t pid = fork();
-
-            if (pid < 0)
-            {
-                perror("Fork failed");
-                return -1;
-            } 
-            else if (pid == 0) // child process
-            {
-                invokeCipher(batchFileName, outputFileName);
-                exit(0);
-            } 
-            else
-            {   // parent process
-                // Wait for the child process to complete
-                int status;
-                waitpid(pid, &status, 0);
-
-                // clean up the batch file and update variables
-                remove(batchFileName);
-                processCount++;
-            }
+            pthread_create(&threads[batchCount], NULL, invokeCipher, batchFileName);
+            batchCount++;
     }
 
-    // free the queue
-    printf("freeing q\n");
+
+    // wait for all threads to finish
+    for (int i = 0; i < batchCount; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // Free the queue and allocated line memory
+    // while (!(qsize(Q)==0)) {
+    //     free(popQ(Q));
+    // }
     freeQ(Q);
 
-	return 0;
-
+    return 0;
 }
