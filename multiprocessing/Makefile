@@ -13,13 +13,12 @@ genRandWord: genRandWord-oconnell.c genRandWord-helper.c
 	@gcc genRandWord-oconnell.c genRandWord-helper.c -o genRandWord
 
 multiprocessing: multiprocessing.c
-	@ gcc multiprocessing.c queue.c polybius.c -o multiprocess
+	@ gcc multiprocessing.c multiprocessing-helper.c queue.c polybius.c -o multiprocess
 
-cipher: polybius.c cipher.c
-	@gcc polybius.c cipher.c -o cipher
-
+cipher: cipher.c polybius.c
+	@gcc cipher.c polybius.c -o cipher
 
 clean:
 	@rm -f genRandWord multiprocess cipher
-	@touch genRandWord-oconnell.c genRandWord-helper.c multiprocessing.c polybius.c cipher.c
+	@touch genRandWord-oconnell.c genRandWord-helper.c cipher.c polybius.c multiprocessing.c
 

@@ -16,31 +16,9 @@
 #include <unistd.h>
 #include "queue.h"
 #include "polybius.h"
+#include "multiprocessing-helper.h"
 
 #define BATCH_SIZE 100
-
-/*
- * Prints the help message for the multiprocessing program
- * 
- */
-void print_help_multi(){
-	printf("multiprocessing. (2023 Oct 8)\n\n");
-	printf("Usage: multiprocess <file_name>\n");
-}
-
-/*
- * Invokes the cipher program as a subprocess
- *
- * @param inputFileName: file that the function will read from
- * @param outputFileName: file that the function will pipe to
- * 
- */
-void invokeCipher(const char* inputFileName, const char* outputFileName) {
-    char command[256];
-    // pipe output of cipher program to output file
-    snprintf(command, sizeof(command), "./cipher %s > %s", inputFileName, outputFileName);
-    system(command);
-}
 
 int main(int argc, char* argv[]) {
 	
@@ -56,7 +34,7 @@ int main(int argc, char* argv[]) {
     char* fileName = argv[1];
 	FILE* fp;
 
-	// open the file in the correct mode
+	// open the file in read mode
 	fp = fopen(fileName, "r");
     if (fp == NULL)
     {
@@ -86,14 +64,14 @@ int main(int argc, char* argv[]) {
 	// close file
 	fclose(fp);    
 
-    // create unique output file names using timestamps
+    // create unique output file names
     time_t current_time;
     char batchFileName[256];
     char outputFileName[256];
 
-    int processCount = 0;
     char* word;
     int wordCount = 0;
+    int processCount = 0;
     FILE* batchFile = NULL;
 
     // process each word from the queue in batches of BATCH_SIZE
@@ -103,7 +81,6 @@ int main(int argc, char* argv[]) {
         if (wordCount == 0) 
         {
             // generate a unique batch file name
-            current_time = time(NULL);
             snprintf(batchFileName, sizeof(outputFileName), "batch_%d.txt", processCount);
 
             // open the batch file for writing
@@ -115,7 +92,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // write the word to the current batch file
+        // write the word to the current batch file and free word
         fprintf(batchFile, "%s\n", word);
         free(word);
         wordCount++;
@@ -129,7 +106,7 @@ int main(int argc, char* argv[]) {
             current_time = time(NULL);
             snprintf(outputFileName, sizeof(outputFileName), "output_%d_%ld.txt", processCount, current_time);
 
-            // create a subprocess to invoke the cipher program for the batch
+            // create a subprocess to invoke the cipher function for the batch
             pid_t pid = fork();
 
             if (pid < 0)
@@ -137,13 +114,15 @@ int main(int argc, char* argv[]) {
                 perror("Fork failed");
                 return -1;
             }
-            else if (pid == 0) // child process
+            // child process
+            else if (pid == 0)
             {
                 invokeCipher(batchFileName, outputFileName);
-                // exit(0);
+                exit(0);
             } 
+            // parent process
             else
-            {   // parent process
+            {
                 // wait for the child process to complete
                 int status;
                 waitpid(pid, &status, 0);
@@ -156,7 +135,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // if there are remaining words in the last batch, invoke the cipher program
+    // if there are remaining words in the last batch, invoke the cipher function
     if (wordCount > 0) 
     {
             fclose(batchFile);
@@ -165,21 +144,23 @@ int main(int argc, char* argv[]) {
             current_time = time(NULL);
             snprintf(outputFileName, sizeof(outputFileName), "output_%d_%ld.txt", processCount, current_time);
 
-            // create a subprocess to invoke the cipher program for the last batch
+            // create a subprocess to invoke the cipher function for the last batch
             pid_t pid = fork();
 
             if (pid < 0)
             {
                 perror("Fork failed");
                 return -1;
-            } 
-            else if (pid == 0) // child process
+            }
+            // child process
+            else if (pid == 0)
             {
                 invokeCipher(batchFileName, outputFileName);
-                // exit(0);
-            } 
+                exit(0);
+            }
+            // parent process
             else
-            {   // parent process
+            {
                 // Wait for the child process to complete
                 int status;
                 waitpid(pid, &status, 0);
@@ -191,9 +172,7 @@ int main(int argc, char* argv[]) {
     }
 
     // free the queue
-    printf("freeing q\n");
     freeQ(Q);
 
 	return 0;
-
 }

@@ -24,7 +24,7 @@ void print_help(){
 	printf("Arguments:\n");
 	printf("  -a            Appends words to file if file already\n");
 	printf("		exists, if this argument is not included\n");
-        printf("		file will be overwritten.\n");
+    printf("		file will be overwritten.\n");
 }
 
 
@@ -55,4 +55,3 @@ char* genRandWord(){
 	return word;
 
 }
-

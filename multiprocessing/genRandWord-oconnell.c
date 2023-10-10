@@ -62,7 +62,6 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < numRand; i++)
 	{
 		char* word = genRandWord();
-		// fprintf(fp,"%s\n", word);
         fprintf(fp,"%s\n", word);
         free(word);
 	}
@@ -71,6 +70,4 @@ int main(int argc, char* argv[]) {
 	fclose(fp);
 
 	return 0;
-
 }
-
