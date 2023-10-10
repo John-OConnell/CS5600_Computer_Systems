@@ -23,7 +23,7 @@
  * Prints the help message for the multiprocessing program
  * 
  */
-void print_help(){
+void print_help_multi(){
 	printf("multiprocessing. (2023 Oct 8)\n\n");
 	printf("Usage: multiprocess <file_name>\n");
 }
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 	if (argc != 2)
 	{
 		printf("INVALID INPUT - See Below for Help\n\n");
-		// print_help();
+		print_help_multi();
 		return -1;
 	}
 
@@ -117,6 +117,7 @@ int main(int argc, char* argv[]) {
 
         // write the word to the current batch file
         fprintf(batchFile, "%s\n", word);
+        free(word);
         wordCount++;
 
         // if we've reached BATCH_SIZE, invoke the cipher program for the batch
@@ -139,7 +140,7 @@ int main(int argc, char* argv[]) {
             else if (pid == 0) // child process
             {
                 invokeCipher(batchFileName, outputFileName);
-                exit(0);
+                // exit(0);
             } 
             else
             {   // parent process
@@ -190,6 +191,7 @@ int main(int argc, char* argv[]) {
     }
 
     // free the queue
+    printf("freeing q\n");
     freeQ(Q);
 
 	return 0;
