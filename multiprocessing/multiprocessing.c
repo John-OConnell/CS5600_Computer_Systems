@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
             else if (pid == 0) // child process
             {
                 invokeCipher(batchFileName, outputFileName);
-                exit(0);
+                // exit(0);
             } 
             else
             {   // parent process
