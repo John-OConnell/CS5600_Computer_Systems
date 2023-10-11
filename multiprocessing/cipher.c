@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     // set line buffer
     char line[256];
 
-    // Read each word from the file and add it into the queue
+    // Read each word from the file and pass it to encode function
     while (fgets(line, sizeof(line), fp) != NULL) {
         line[strcspn(line, "\n")] = '\0'; // Remove the newline character
         pbEncode(line, pbSquare);

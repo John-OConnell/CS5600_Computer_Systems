@@ -53,8 +53,6 @@ char* pbEncode(const char *plaintext, char table[SQUARE_SIZE][SQUARE_SIZE])
                     {
                         sprintf(&word[i*2], "%d", (j+1));
                         sprintf(&word[(i*2) + 1], "%d", (k+1));
-                        //word[i*2] = str(j+1);
-                        //word[(i*2) + 1] = str(k+1);
                     }
                 }
             }

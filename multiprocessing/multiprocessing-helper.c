@@ -31,5 +31,8 @@ void invokeCipher(const char* inputFileName, const char* outputFileName) {
     char command[256];
     // pipe output of cipher program to output file
     snprintf(command, sizeof(command), "./cipher %s > output/%s", inputFileName, outputFileName);
-    system(command);
+    int ret = system(command);
+    if (ret == -1) {
+        perror("Error executing the cipher program\n");
+    }
 }

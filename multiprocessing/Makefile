@@ -6,7 +6,7 @@
 #
 #
 
-all: genRandWord multiprocessing cipher
+all: genRandWord multiprocessing cipher unittests
 
 
 genRandWord: genRandWord-oconnell.c genRandWord-helper.c
@@ -18,7 +18,10 @@ multiprocessing: multiprocessing.c
 cipher: cipher.c polybius.c
 	@gcc cipher.c polybius.c -o cipher
 
+unittests: unittests.c
+	@gcc unittests.c -o unittests
+
 clean:
-	@rm -f genRandWord multiprocess cipher
-	@touch genRandWord-oconnell.c genRandWord-helper.c cipher.c polybius.c multiprocessing.c
+	@rm -f genRandWord multiprocess cipher unittests
+	@touch genRandWord-oconnell.c genRandWord-helper.c cipher.c polybius.c multiprocessing.c unittests.c
 
