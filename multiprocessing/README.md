@@ -3,14 +3,14 @@
 In order to compile the necessary executables simply run make from the command line. This will produce
 three executables: genRandWord, multiprocess, and cipher. 
 
-In order to generate the file of random words needed to pass to the multiprocess program, simply run:
-./genRandWord <num-of-rand-words> <file>
-For example, to generate a file of 10,000 words called test.txt you would run:
+In order to generate the file of random words needed to pass to the multiprocess program, simply run:\
+./genRandWord num-of-rand-words file-name\
+For example, to generate a file of 10,000 words called test.txt you would run:\
 ./genRandWord 10000 test.txt
 
-In order to then encode those words using the multiprocess progam, simply run:
-./multiprocess <file>
-For the previous example, you would run:
+In order to then encode those words using the multiprocess progam, simply run:\
+./multiprocess file-name\
+For the previous example, you would run:\
 ./multiprocess test.txt
 
 In order to ensure the correct output, please make sure the "output" directory is present in the same folder
