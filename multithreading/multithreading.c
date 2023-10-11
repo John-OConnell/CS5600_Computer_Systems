@@ -61,10 +61,11 @@ int main(int argc, char* argv[]) {
     char batchFileName[256];
     char outputFileName[256];
     pthread_t threads[BATCH_SIZE];
+    int args[BATCH_SIZE];
 
-    int batchCount = 0;
     char* word;
     int wordCount = 0;
+    int batchCount = 0;
     FILE* batchFile = NULL;
 
     // process each word from the queue in batches of BATCH_SIZE
@@ -74,8 +75,7 @@ int main(int argc, char* argv[]) {
         if (wordCount == 0) 
         {
             // generate a unique batch file name
-            current_time = time(NULL);
-            snprintf(batchFileName, sizeof(outputFileName), "batch_%d.txt", batchCount);
+            snprintf(batchFileName, sizeof(batchFileName), "batch_%d.txt", batchCount);
 
             // open the batch file for writing
             batchFile = fopen(batchFileName, "w");
@@ -96,7 +96,10 @@ int main(int argc, char* argv[]) {
         {
             fclose(batchFile);
 
-            pthread_create(&threads[batchCount], NULL, invokeCipher, batchFileName);
+            // update args array with correct batch num
+            args[batchCount] = batchCount;
+            pthread_create(&threads[batchCount], NULL, invokeCipher, &args[batchCount]);
+            wordCount = 0;
             batchCount++;
         }
     }
@@ -105,7 +108,10 @@ int main(int argc, char* argv[]) {
     if (wordCount > 0) 
     {
             fclose(batchFile);
-            pthread_create(&threads[batchCount], NULL, invokeCipher, batchFileName);
+
+            // update args array with correct batch num
+            args[batchCount] = batchCount;
+            pthread_create(&threads[batchCount], NULL, invokeCipher, &args[batchCount]);
             batchCount++;
     }
 

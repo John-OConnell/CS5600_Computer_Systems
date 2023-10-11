@@ -27,8 +27,8 @@ char pbSquare[SQUARE_SIZE][SQUARE_SIZE] = {
  * 
  */
 void print_help_multi(){
-	printf("multiprocessing. (2023 Oct 8)\n\n");
-	printf("Usage: multiprocess <file_name>\n");
+	printf("multithreading. (2023 Oct 8)\n\n");
+	printf("Usage: multithread <file_name>\n");
 }
 
 /*
@@ -38,16 +38,20 @@ void print_help_multi(){
  * 
  */
 void* invokeCipher(void* data) {
-    char* inputFileName = (char*)data;
+    // convert data to int
+    int batchCount = *(int*)data;
+    
+    char batchFileName[256];
     char outputFileName[256];
+    snprintf(batchFileName, sizeof(batchFileName), "batch_%d.txt", batchCount);
 
     // Generate a unique output file for the ciphered batch
     time_t current_time = time(NULL);
-    snprintf(outputFileName, sizeof(outputFileName), "output/output_%ld.txt", current_time);
+    snprintf(outputFileName, sizeof(outputFileName), "output/output_%d_%ld.txt", batchCount, current_time);
 
     FILE* fp;
     // open the input file in read mode
-	fp = fopen(inputFileName, "r");
+	fp = fopen(batchFileName, "r");
     if (fp == NULL)
     {
         perror("Error opening file");
@@ -76,7 +80,7 @@ void* invokeCipher(void* data) {
 
     fclose(fp);
     fclose(fp2);
-    remove(inputFileName);
+    remove(batchFileName);
 
     return NULL;
 }

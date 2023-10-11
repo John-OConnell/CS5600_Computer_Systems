@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
         free(word);
         wordCount++;
 
-        // if we've reached BATCH_SIZE, invoke the cipher program for the batch
+        // if we've reached BATCH_SIZE, invoke the cipher function for the batch
         if (wordCount >= BATCH_SIZE)
         {
             fclose(batchFile);
