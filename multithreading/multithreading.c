@@ -60,8 +60,9 @@ int main(int argc, char* argv[]) {
     time_t current_time;
     char batchFileName[256];
     char outputFileName[256];
-    pthread_t threads[BATCH_SIZE];
-    int args[BATCH_SIZE];
+    int num_batches = (qsize(Q) + BATCH_SIZE - 1) / BATCH_SIZE;
+    pthread_t threads[num_batches];
+    int args[num_batches];
 
     char* word;
     int wordCount = 0;
@@ -121,10 +122,6 @@ int main(int argc, char* argv[]) {
         pthread_join(threads[i], NULL);
     }
 
-    // Free the queue and allocated line memory
-    // while (!(qsize(Q)==0)) {
-    //     free(popQ(Q));
-    // }
     freeQ(Q);
 
     return 0;
