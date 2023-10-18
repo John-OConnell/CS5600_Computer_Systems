@@ -3,7 +3,6 @@ package boundedBuffer;
 import java.util.Random;
 
 public class producerThread implements Runnable {
-
     private final BoundedBuffer buffer;
     private final int insertions;
 
@@ -12,6 +11,11 @@ public class producerThread implements Runnable {
         this.insertions = insertions;
     }
 
+    /**
+     * Overriding the Runnable run() member function
+     * Runs a producerThread, inserting a string into the BoundedBuffer
+     *
+     */
     @Override
     public void run() {
         for (int i = 0; i < insertions; i++) {
@@ -25,10 +29,14 @@ public class producerThread implements Runnable {
         }
     }
 
+    /**
+     * Helper function to generate random number for input string
+     *
+     */
     public String genRandNums(){
         // create instance of Random class
         Random rand = new Random();
-        // Generate random integers in range 0 to 999
+        //gGenerate random integers in range 10000 to 99999
         int result = rand.nextInt(90000) + 10000;
         return String.valueOf(result);
     }

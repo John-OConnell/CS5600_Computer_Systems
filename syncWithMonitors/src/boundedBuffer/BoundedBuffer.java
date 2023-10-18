@@ -7,7 +7,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class BoundedBuffer {
     private final String[] buffer;
     private final int capacity;
-
     private int front;
     private int rear;
     private int count;
@@ -19,12 +18,14 @@ public class BoundedBuffer {
 
     public BoundedBuffer(int capacity) {
         super();
-
         this.capacity = capacity;
-
         buffer = new String[capacity];
     }
 
+    /**
+     * Deposits a string into the Bounded Buffer
+     *
+     */
     public void deposit(String data) throws InterruptedException {
         lock.lock();
 
@@ -43,6 +44,10 @@ public class BoundedBuffer {
         }
     }
 
+    /**
+     * Fetches a string from the Bounded Buffer
+     *
+     */
     public String fetch() throws InterruptedException {
         lock.lock();
 

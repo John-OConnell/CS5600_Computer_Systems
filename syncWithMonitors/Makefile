@@ -1,3 +1,11 @@
+#
+# Makefile / Synchronization with Monitors
+#
+# John O'Connell / CS5600 / Northeastern University
+# Fall 2023 / Oct 18, 2023
+#
+#
+
 JFLAGS = -g
 CLASSPATH = ./src
 OUTDIR = ./out
