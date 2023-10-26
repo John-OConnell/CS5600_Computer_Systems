@@ -71,6 +71,8 @@ int unitTest1(int status){
     fscanf(fp, "Receiver: %255[^\n]\n", receiver);
     fscanf(fp, "Content: %511[^\n]\n", content);
 
+    fclose(fp);
+
     if(strcmp("Test Sender", sender) != 0)
     {
         result = 0;
