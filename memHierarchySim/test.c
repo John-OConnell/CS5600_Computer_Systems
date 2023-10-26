@@ -122,6 +122,7 @@ int unitTest2(int status){
     else 
     {
         printf("HERE\n");
+        free(myMsg);
         return 0;
     }
     // Free memory for messages when done
