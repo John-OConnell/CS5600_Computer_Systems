@@ -128,6 +128,8 @@ msg* retrieve_msg(unsigned int msgID){
     char timeString[32];
     fscanf(fp, "Time: %31[^\n]\n", timeString);
     struct tm timeInfo;
+    // zero out the tm struct to prevent valgrind issues
+    memset(&timeInfo, 0, sizeof(struct tm));
     strptime(timeString, "%Y-%m-%d %H:%M:%S", &timeInfo);
     retrievedMsg->time = mktime(&timeInfo);
     fscanf(fp, "Sender: %255[^\n]\n", retrievedMsg->sender);
