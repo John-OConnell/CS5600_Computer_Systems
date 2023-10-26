@@ -132,30 +132,76 @@ int unitTest2(int status){
     return 1;
 }
 
-// // Test string with leading and trailing spaces
-// int unitTest3(int status){
+// Test attempting to retrieve message that doesn't exist
+int unitTest3(int status){
     
-//     char testStr[] = " hello world ";
+    // retrieve message by its identifier
+    unsigned int targetID = 24;
+    msg* retrievedMsg = retrieve_msg(targetID);
 
-//     return(3 == countVowels(testStr));
-// }
+    return(retrievedMsg == NULL);
+}
 
-// // Test input with special characters
-// int unitTest4(int status){
+// Test storing and retrieving multiple messages
+int unitTest4(int status){
+
+    // create and store messages
+    msg* myMsg1 = create_msg("Test Sender 1", "Test Reciever 1", "Hello World!");
+    msg* myMsg2 = create_msg("Test Sender 2", "Test Reciever 2", "This is a test.");
+    store_msg(myMsg1);
+    store_msg(myMsg2);
+
+    // retrieve message by its identifier
+    unsigned int targetID1 = myMsg1->id;
+    msg* retrievedMsg1 = retrieve_msg(targetID1);
+    unsigned int targetID2 = myMsg2->id;
+    msg* retrievedMsg2 = retrieve_msg(targetID2);
+
+    if (retrievedMsg1 != NULL && retrievedMsg2 != NULL) 
+    {
+        // Print or process the retrieved message
+
+        char time[32];
+        strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", localtime(&retrievedMsg1->time));
+        printf("Information of First Recieved Message:\n");
+        printf("\tID: %u\n", retrievedMsg1->id);
+        printf("\tTime: %s\n", time);
+        printf("\tSender: %s\n", retrievedMsg1->sender);
+        printf("\tReceiver: %s\n", retrievedMsg1->receiver);
+        printf("\tContent: %s\n", retrievedMsg1->content);
+        printf("\tDelivered: %d\n", retrievedMsg1->delivered);
+
+        strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", localtime(&retrievedMsg2->time));
+        printf("Information of Second Recieved Message:\n");
+        printf("\tID: %u\n", retrievedMsg2->id);
+        printf("\tTime: %s\n", time);
+        printf("\tSender: %s\n", retrievedMsg2->sender);
+        printf("\tReceiver: %s\n", retrievedMsg2->receiver);
+        printf("\tContent: %s\n", retrievedMsg2->content);
+        printf("\tDelivered: %d\n", retrievedMsg2->delivered);
+    }
+    else 
+    {
+        free(myMsg1);
+        free(myMsg2);
+        return 0;
+    }
+    // Free memory for messages when done
+    free(myMsg1);
+    free(myMsg2);
+    free(retrievedMsg1);
+    free(retrievedMsg2);
     
-//     char testStr[] = "!hello! --World--";
-
-//     return(3 == countVowels(testStr));
-// }
-
+    return 1;
+}
 
 // list of unit tests 
 int (*unitTests[])(int)={
     unitTest0,
     unitTest1,
     unitTest2,
-    // unitTest3,
-    // unitTest4,
+    unitTest3,
+    unitTest4,
     NULL
 };
 
