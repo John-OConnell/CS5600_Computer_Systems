@@ -6,37 +6,42 @@
 // Test creating a message
 int unitTest0(int status){
     
+    int result;
     // create message
     msg* myMsg = create_msg("Test Sender", "Test Receiver", "Hello World!");
     if(myMsg == NULL)
     {
-        return 0;
+        result = 0;
     }
     else if(myMsg->id != 1)
     {
-        return 0;
+        result = 0;
     }
     else if(strcmp("Test Sender", myMsg->sender) != 0)
     {
-        return 0;
+        result = 0;
     }
     else if(strcmp("Test Receiver", myMsg->receiver) != 0)
     {
-        return 0;
+        result = 0;
     }
     else if(strcmp("Hello World!", myMsg->content) != 0)
     {
-        return 0;
+        result = 0;
     }
     else
     {
-        return 1;
+        result = 1;
     }
+
+    free(myMsg);
+    return result;
 }
 
 // Test storing message
 int unitTest1(int status){
     
+    int result;
     // create and store message
     msg* myMsg = create_msg("Test Sender", "Test Receiver", "Hello World!");
     store_msg(myMsg);
@@ -68,20 +73,23 @@ int unitTest1(int status){
 
     if(strcmp("Test Sender", sender) != 0)
     {
-        return 0;
+        result = 0;
     }
     else if(strcmp("Test Receiver", receiver) != 0)
     {
-        return 0;
+        result = 0;
     }
     else if(strcmp("Hello World!", content) != 0)
     {
-        return 0;
+        result = 0;
     }
     else
     {
-        return 1;
+        result = 1;
     }
+
+    free(myMsg);
+    return result;
 }
 
 // Test full process of creating, storing, and retrieving
