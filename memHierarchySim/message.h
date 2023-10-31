@@ -13,6 +13,7 @@
 #include <time.h>
 
 #define MSGDIR "messages/"
+#define MSGSIZE 1024
 
 unsigned int nextMsgID = 1;
 
@@ -22,7 +23,7 @@ typedef struct message{
     time_t time;
     char sender[256];
     char receiver[256];
-    char content[512];
+    char content[MSGSIZE];
     int delivered;
 } msg;
 
@@ -134,7 +135,7 @@ msg* retrieve_msg(unsigned int msgID){
     retrievedMsg->time = mktime(&timeInfo);
     fscanf(fp, "Sender: %255[^\n]\n", retrievedMsg->sender);
     fscanf(fp, "Receiver: %255[^\n]\n", retrievedMsg->receiver);
-    fscanf(fp, "Content: %511[^\n]\n", retrievedMsg->content);
+    fscanf(fp, "Content: %1023[^\n]\n", retrievedMsg->content);
 
     fclose(fp);
 

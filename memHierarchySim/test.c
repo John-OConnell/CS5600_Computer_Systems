@@ -61,7 +61,7 @@ int unitTest1(int status){
 
     char sender[256];
     char receiver[256];
-    char content[512];
+    char content[1024];
     int delivered;
 
     // read message details from the file
@@ -69,7 +69,7 @@ int unitTest1(int status){
     fscanf(fp, "%*[^\n]\n");
     fscanf(fp, "Sender: %255[^\n]\n", sender);
     fscanf(fp, "Receiver: %255[^\n]\n", receiver);
-    fscanf(fp, "Content: %511[^\n]\n", content);
+    fscanf(fp, "Content: %1023[^\n]\n", content);
 
     fclose(fp);
 
