@@ -8,10 +8,10 @@
 
 all: test
 
-test: message.h test.c
-	@gcc test.c -o test
+test: message.c test.c
+	@gcc message.c test.c -o test
 
 clean:
 	@rm -f test messages/*
-	@touch message.h test.c
+	@touch message.h message.c test.c
 
