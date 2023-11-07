@@ -243,7 +243,7 @@ int unitTest7()
     return result;
 }
 
-// Test push front empty return value
+// Test push front return value
 int unitTest8()
 {
     int result = 0;
@@ -261,7 +261,7 @@ int unitTest8()
     return result;
 }
 
-// Test push front empty count
+// Test push front fail
 int unitTest9()
 {
     int result = 0;
@@ -279,6 +279,338 @@ int unitTest9()
     return result;
 }
 
+// Test push back empty
+int unitTest10()
+{
+    int result = 0;
+    dll_t* test_dll = create_empty_dll();
+    data_t* data_0 = (data_t*)malloc(sizeof(data_t));
+
+    data_0->data = 67;
+    dll_push_back(test_dll, data_0);
+
+    if(67 == check_node_data(test_dll, 0))
+    {
+        result = 1;
+    }
+
+    free_dll(test_dll);
+    return result;
+}
+
+// Test push back empty count
+int unitTest11()
+{
+    int result = 0;
+    dll_t* test_dll = create_empty_dll();
+    data_t* data_0 = (data_t*)malloc(sizeof(data_t));
+
+    data_0->data = 67;
+    dll_push_back(test_dll, data_0);
+
+    if((1 == test_dll->count) && (1 == dll_size(test_dll)))
+    {
+        result = 1;
+    }
+
+    free_dll(test_dll);
+    return result;
+}
+
+// Test push back non empty
+int unitTest12()
+{
+    int result = 0;
+    dll_t* test_dll = create_test_dll();
+    data_t* data_0 = (data_t*)malloc(sizeof(data_t));
+
+    data_0->data = 67;
+    dll_push_back(test_dll, data_0);
+
+    if( 7 == check_node_data(test_dll, 0) &&
+        17 == check_node_data(test_dll, 1) &&
+        27 == check_node_data(test_dll, 2) &&
+        37 == check_node_data(test_dll, 3) &&
+        67 == check_node_data(test_dll, 4))
+    {
+        result = 1;
+    }
+
+    free_dll(test_dll);
+    return result;
+}
+
+// Test push back non empty count
+int unitTest13()
+{
+    int result = 0;
+    dll_t* test_dll = create_test_dll();
+    data_t* data_0 = (data_t*)malloc(sizeof(data_t));
+
+    data_0->data = 67;
+    dll_push_back(test_dll, data_0);
+
+    if((5 == test_dll->count) && (5 == dll_size(test_dll)))
+    {
+        result = 1;
+    }
+
+    free_dll(test_dll);
+    return result;
+}
+
+// Test push back return value
+int unitTest14()
+{
+    int result = 0;
+    dll_t* test_dll = create_empty_dll();
+    data_t* data_0 = (data_t*)malloc(sizeof(data_t));
+
+    data_0->data = 67;
+
+    if((1 == dll_push_back(test_dll, data_0)))
+    {
+        result = 1;
+    }
+
+    free_dll(test_dll);
+    return result;
+}
+
+// Test push back fail
+int unitTest15()
+{
+    int result = 0;
+    dll_t* test_dll = NULL;
+    data_t* data_0 = (data_t*)malloc(sizeof(data_t));
+
+    data_0->data = 67;
+
+    if((-1 == dll_push_back(test_dll, data_0)))
+    {
+        result = 1;
+    }
+
+    free(data_0);
+    return result;
+}
+
+// Test pop front one node
+int unitTest16()
+{
+    int result = 0;
+    dll_t* test_dll = create_one_node_dll();
+    data_t* pop_data = dll_pop_front(test_dll);
+
+    if((7 == pop_data->data))
+    {
+        result = 1;
+    }
+
+    free(pop_data);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop front one node count
+int unitTest17()
+{
+    int result = 0;
+    dll_t* test_dll = create_one_node_dll();
+    data_t* pop_data = dll_pop_front(test_dll);
+
+    if((0 == test_dll->count) && (0 == dll_size(test_dll)))
+    {
+        result = 1;
+    }
+
+    free(pop_data);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop front multi node
+int unitTest18()
+{
+    int result = 0;
+    dll_t* test_dll = create_test_dll();
+    data_t* data_0 = dll_pop_front(test_dll);
+    data_t* data_1 = dll_pop_front(test_dll);
+    data_t* data_2 = dll_pop_front(test_dll);
+    data_t* data_3 = dll_pop_front(test_dll);
+
+    if( 7 == data_0->data &&
+        17 == data_1->data &&
+        27 == data_2->data &&
+        37 == data_3->data)
+    {
+        result = 1;
+    }
+
+    free(data_0);
+    free(data_1);
+    free(data_2);
+    free(data_3);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop front multi node count
+int unitTest19()
+{
+    int result = 0;
+    dll_t* test_dll = create_test_dll();
+    data_t* pop_data = dll_pop_front(test_dll);
+
+    if((3 == test_dll->count) && (3 == dll_size(test_dll)))
+    {
+        result = 1;
+    }
+
+    free(pop_data);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop front empty
+int unitTest20()
+{
+    int result = 0;
+    dll_t* test_dll = create_empty_dll();
+    data_t* pop_data = dll_pop_front(test_dll);
+
+    if(NULL == pop_data)
+    {
+        result = 1;
+    }
+
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop front fail
+int unitTest21()
+{
+    int result = 0;
+    dll_t* test_dll = NULL;
+    data_t* pop_data = dll_pop_front(test_dll);
+
+    if(NULL == pop_data)
+    {
+        result = 1;
+    }
+
+    return result;
+}
+
+// Test pop back one node
+int unitTest22()
+{
+    int result = 0;
+    dll_t* test_dll = create_one_node_dll();
+    data_t* pop_data = dll_pop_back(test_dll);
+
+    if((7 == pop_data->data))
+    {
+        result = 1;
+    }
+
+    free(pop_data);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop back one node count
+int unitTest23()
+{
+    int result = 0;
+    dll_t* test_dll = create_one_node_dll();
+    data_t* pop_data = dll_pop_back(test_dll);
+
+    if((0 == test_dll->count) && (0 == dll_size(test_dll)))
+    {
+        result = 1;
+    }
+
+    free(pop_data);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop back multi node
+int unitTest24()
+{
+    int result = 0;
+    dll_t* test_dll = create_test_dll();
+    data_t* data_0 = dll_pop_back(test_dll);
+    data_t* data_1 = dll_pop_back(test_dll);
+    data_t* data_2 = dll_pop_back(test_dll);
+    data_t* data_3 = dll_pop_back(test_dll);
+
+    if( 37 == data_0->data &&
+        27 == data_1->data &&
+        17 == data_2->data &&
+        7 == data_3->data)
+    {
+        result = 1;
+    }
+
+    free(data_0);
+    free(data_1);
+    free(data_2);
+    free(data_3);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop back multi node count
+int unitTest25()
+{
+    int result = 0;
+    dll_t* test_dll = create_test_dll();
+    data_t* pop_data = dll_pop_back(test_dll);
+
+    if((3 == test_dll->count) && (3 == dll_size(test_dll)))
+    {
+        result = 1;
+    }
+
+    free(pop_data);
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop back empty
+int unitTest26()
+{
+    int result = 0;
+    dll_t* test_dll = create_empty_dll();
+    data_t* pop_data = dll_pop_back(test_dll);
+
+    if(NULL == pop_data)
+    {
+        result = 1;
+    }
+
+    free_dll(test_dll);
+    return result;
+}
+
+// Test pop back fail
+int unitTest27()
+{
+    int result = 0;
+    dll_t* test_dll = NULL;
+    data_t* pop_data = dll_pop_back(test_dll);
+
+    if(NULL == pop_data)
+    {
+        result = 1;
+    }
+
+    return result;
+}
+
 
 // list of unit tests 
 int (*unitTests[])(int)={
@@ -292,6 +624,24 @@ int (*unitTests[])(int)={
     unitTest7,
     unitTest8,
     unitTest9,
+    unitTest10,
+    unitTest11,
+    unitTest12,
+    unitTest13,
+    unitTest14,
+    unitTest15,
+    unitTest16,
+    unitTest17,
+    unitTest18,
+    unitTest19,
+    unitTest20,
+    unitTest21,
+    unitTest22,
+    unitTest23,
+    unitTest24,
+    unitTest25,
+    unitTest26,
+    unitTest27,
     NULL
 };
 
