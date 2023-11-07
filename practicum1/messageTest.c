@@ -1,3 +1,11 @@
+//
+// messageTest.c / Practicum 1
+//
+// John O'Connell / CS5600 / Northeastern University
+// Fall 2023 / Nov 7, 2023
+//
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +20,7 @@ int unitTest0(int status){
     msg* myMsg = create_msg("Test Sender", "Test Receiver", "Hello World!");
     printf("The size of myMsg is: %lu\n", sizeof(msg));
     printf("The size of content is: %lu\n", CONTENTSIZE);
-    printf("The size of name is: %lu\n", NAMESIZE);
+    printf("The size of sender/receiver is: %lu\n", NAMESIZE);
     printf("The size of int is: %lu\n", sizeof(int));
     printf("The size of unsigned int is: %lu\n", sizeof(unsigned int));
     printf("The size of time_t is: %lu\n", sizeof(time_t));

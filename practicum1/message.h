@@ -1,8 +1,8 @@
 //
-// message.h / Memory Heirarchy Simulation - Part 1
+// message.h / Practicum 1
 //
 // John O'Connell / CS5600 / Northeastern University
-// Fall 2023 / Oct 26, 2023
+// Fall 2023 / Nov 7, 2023
 //
 //
 
