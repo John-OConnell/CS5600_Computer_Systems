@@ -13,6 +13,7 @@
 #include <string.h>
 #include <time.h>
 #include "message.h"
+#include "cache.h"
 
 unsigned int nextMsgID = 1;
 
@@ -26,10 +27,10 @@ unsigned int nextMsgID = 1;
  * @return newMsg: new populated message struct
  * 
  */
-msg* create_msg(const char* sender, const char* receiver, const char* content){
+msg_t* create_msg(const char* sender, const char* receiver, const char* content){
     
     // dynamically allocate memory for the message
-    msg* newMsg = (msg*)malloc(sizeof(msg));
+    msg_t* newMsg = (msg_t*)malloc(sizeof(msg_t));
     if(newMsg == NULL)
     {
         return NULL;
@@ -51,10 +52,10 @@ msg* create_msg(const char* sender, const char* receiver, const char* content){
  *
  * @param message: instance of the message struct
  * 
- * @return 0 if success, -1 if failure
+ * @return 1 if success, -1 if failure
  * 
  */
-int store_msg(const msg* message){
+int store_msg(const msg_t* message){
 
     // create file name based on message id
     char fileName[256];
@@ -85,7 +86,9 @@ int store_msg(const msg* message){
 }
 
 /*
- * Retrieves a message from the disk
+ * Retrieves a message
+ * If messages is in the cache, retrieves from cache
+ * If not, retrieves from disk and updates cache
  *
  * @param msgID: the id of the message to be retrieved
  * 
@@ -93,7 +96,15 @@ int store_msg(const msg* message){
  *                       Returns NULL if message cannot be retrieved.
  * 
  */
-msg* retrieve_msg(unsigned int msgID){
+msg_t* retrieve_msg(cache_t* cache, unsigned int msgID){
+    
+    msg_t* retrievedMsg = NULL;
+    retrievedMsg = check_cache(cache, msgID);
+    if(retrievedMsg != NULL)
+    {
+        cache->hits++;
+        return retrievedMsg;
+    }
     
     // initialize file name based on input id
     char fileName[256];
@@ -107,7 +118,7 @@ msg* retrieve_msg(unsigned int msgID){
     }
 
     // create new message struct to store file contents
-    msg* retrievedMsg = (msg*)malloc(sizeof(msg));
+    retrievedMsg = (msg_t*)malloc(sizeof(msg_t));
     if (retrievedMsg == NULL) {
         fclose(fp);
         return NULL;
@@ -125,12 +136,18 @@ msg* retrieve_msg(unsigned int msgID){
     fscanf(fp, "Sender: %255[^\n]\n", retrievedMsg->sender);
     fscanf(fp, "Receiver: %255[^\n]\n", retrievedMsg->receiver);
     fscanf(fp, "Content: %1023[^\n]\n", retrievedMsg->content);
+    fscanf(fp, "Delivered: %d\n", &retrievedMsg->delivered);
 
     fclose(fp);
+    if(retrievedMsg->delivered == 0)
+    {
+        // indicate message has been delivered and overwrite file
+        retrievedMsg->delivered = 1;
+        store_msg(retrievedMsg);
+    }
 
-    // indicate message has been delivered and overwrite file
-    retrievedMsg->delivered = 1;
-    store_msg(retrievedMsg);
+    cache->misses++;
+    cache_insert(cache, retrievedMsg);
 
     return retrievedMsg;
 }

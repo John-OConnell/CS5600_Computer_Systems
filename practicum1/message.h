@@ -6,11 +6,17 @@
 //
 //
 
+#ifndef MESSAGE_H
+#define MESSAGE_H
+
 #include <time.h>
+
 #define MSGDIR "messages/"
 #define MSGSIZE 1024
 #define CONTENTSIZE (MSGSIZE-(sizeof(int)*2)-sizeof(time_t))/2
 #define NAMESIZE (CONTENTSIZE/2)-4
+
+typedef struct cache cache_t;
 
 // message struct
 typedef struct message{
@@ -20,10 +26,12 @@ typedef struct message{
     char receiver[NAMESIZE];
     char content[CONTENTSIZE];
     int delivered;
-}msg;
+}msg_t;
 
-msg* create_msg(const char* sender, const char* receiver, const char* content);
+msg_t* create_msg(const char* sender, const char* receiver, const char* content);
 
-int store_msg(const msg* message);
+int store_msg(const msg_t* message);
 
-msg* retrieve_msg(unsigned int msgID);
+msg_t* retrieve_msg(cache_t* cache, unsigned int msgID);
+
+#endif
