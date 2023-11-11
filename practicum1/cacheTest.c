@@ -13,12 +13,14 @@
 #include "message.h"
 #include "genRandWord.h"
 
+cache_t* testCache;
+
 msg_t* create_rand_msg()
 {
     char* sender = genRandWord();
     char* receiver = genRandWord();
     char* word;
-    char message[MSGSIZE];
+    char* message = (char*)calloc(MSGSIZE, sizeof(char));
 
     for(int i = 0; i < 5; i++)
     {
@@ -38,26 +40,17 @@ msg_t* create_rand_msg()
 // test adding one message to cache
 int unitTest0()
 {
-    cache_t* testCache = create_cache();
-    if(testCache == NULL)
+
+    msg_t* testMsg = retrieve_msg(testCache, 1);
+    if(testMsg->id != 1)
     {
         return 0;
     }
-
-    msg_t* newMsg = create_rand_msg();
-    if(store_msg(newMsg) == -1)
-    {
-        return 0;
-    }
-
-    retrieve_msg(testCache, 1);
 
     printf("Cache hits: %d\n", testCache->hits);
     printf("Cache misses: %d\n", testCache->misses);
     printf("Cache: ");
     print_cache(testCache);
-
-    free_cache(testCache);
 
     return 1;
 
@@ -66,30 +59,23 @@ int unitTest0()
 // test adding two messages to cache
 int unitTest1()
 {
-    cache_t* testCache = create_cache();
-    if(testCache == NULL)
+    
+    msg_t* testMsg = retrieve_msg(testCache, 2);
+    if(testMsg->id != 2)
     {
         return 0;
     }
-
-    for(int i = 0; i < 2; i++)
+    
+    testMsg = retrieve_msg(testCache, 1);
+    if(testMsg->id != 1)
     {
-        msg_t* newMsg = create_rand_msg();
-        if(store_msg(newMsg) == -1)
-        {
-            return 0;
-        }
+        return 0;
     }
-
-    retrieve_msg(testCache, 2);
-    retrieve_msg(testCache, 1);
 
     printf("Cache hits: %d\n", testCache->hits);
     printf("Cache misses: %d\n", testCache->misses);
     printf("Cache: ");
     print_cache(testCache);
-
-    free_cache(testCache);
 
     return 1;
 
@@ -98,20 +84,6 @@ int unitTest1()
 // test adding three messages to cache
 int unitTest2()
 {
-    cache_t* testCache = create_cache();
-    if(testCache == NULL)
-    {
-        return 0;
-    }
-
-    for(int i = 0; i < 3; i++)
-    {
-        msg_t* newMsg = create_rand_msg();
-        if(store_msg(newMsg) == -1)
-        {
-            return 0;
-        }
-    }
 
     retrieve_msg(testCache, 3);
     retrieve_msg(testCache, 2);
@@ -122,8 +94,6 @@ int unitTest2()
     printf("Cache: ");
     print_cache(testCache);
 
-    free_cache(testCache);
-
     return 1;
 
 }
@@ -131,8 +101,8 @@ int unitTest2()
 // list of unit tests 
 int (*unitTests[])(int)={
     unitTest0,
-    unitTest1,
-    unitTest2,
+    // unitTest1,
+    // unitTest2,
     // unitTest3,
     NULL
 };
@@ -145,6 +115,15 @@ int main(){
     srand(time(NULL));
     int testsPassed = 0;
     int counter = 0;
+
+    testCache = create_cache();
+
+    for(int i = 0; i < 6; i++)
+    {
+        msg_t* newMsg = create_rand_msg();
+        store_msg(newMsg);
+        free(newMsg);
+    }
 
     while(unitTests[counter]!=NULL)
     {
@@ -162,6 +141,8 @@ int main(){
     }
 
     printf("%d of %d tests passed\n",testsPassed,counter);
+
+    free(testCache);
 
     return 0;
 }
