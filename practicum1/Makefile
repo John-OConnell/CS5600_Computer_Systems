@@ -10,17 +10,23 @@ all: dllTest lruTest randTest
 
 test: dllTest lruTest randTest
 
+eval: lruEval randEval
+
 dllTest: dllTest.c
 	@gcc dll.c dllTest.c -o dllTest
 
-lruTest: message.c lruCache.c genRandWord.c cacheTest.c
+lruTest: message.c lruCache.c genRandWord.c dll.c cacheTest.c
 	@gcc message.c lruCache.c genRandWord.c dll.c cacheTest.c -o lruTest
 
-randTest: message.c randCache.c genRandWord.c cacheTest.c
+randTest: message.c randCache.c genRandWord.c dll.c cacheTest.c
 	@gcc message.c randCache.c genRandWord.c dll.c cacheTest.c -o randTest
 
+lruEval: message.c lruCache.c genRandWord.c dll.c cacheEval.c
+	@gcc message.c lruCache.c genRandWord.c dll.c cacheEval.c -o lruEval
+
+randEval: message.c randCache.c genRandWord.c dll.c cacheEval.c
+	@gcc message.c randCache.c genRandWord.c dll.c cacheEval.c -o randEval
+
 clean:
-	@rm -f dllTest
-	@rm -f lruTest
-	@rm -f randTest
+	@rm -f dllTest lruTest randTest lruEval randEval
 	@rm -f test messages/*

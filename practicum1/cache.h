@@ -27,9 +27,11 @@ typedef struct cache
 
 cache_t* create_cache();
 
+int cache_insert(cache_t* cache, msg_t* message);
+
 msg_t* check_cache(cache_t* cache, int msgID);
 
-int cache_insert(cache_t* cache, msg_t* message);
+int reset_cache(cache_t* cache);
 
 void free_cache(cache_t* cache);
 

@@ -28,15 +28,38 @@ cache_t* create_cache()
     return my_cache;
 }
 
+int cache_insert(cache_t* cache, msg_t* message)
+{
+    if(cache == NULL)
+    {
+        return -1;
+    }
+
+    if(cache->cache_dll->count < CACHESIZE)
+    {
+        return dll_push_front(cache->cache_dll, message);
+    }
+    else
+    {
+        msg_t* old_msg = dll_pop_back(cache->cache_dll);
+        free(old_msg);
+        return dll_push_front(cache->cache_dll, message);
+    }
+}
+
 msg_t* check_cache(cache_t* cache, int msgID)
 {
+    if(cache == NULL)
+    {
+        return NULL;
+    }
+
     int pos = 0;
-    msg_t* msg;
     node_t* iterator = cache->cache_dll->head;
 
     while(iterator != NULL)
     {
-        msg = iterator->data;
+        msg_t* msg = iterator->data;
         if(msg->id == msgID)
         {
             msg_t* hit = dll_remove(cache->cache_dll, pos);
@@ -49,18 +72,23 @@ msg_t* check_cache(cache_t* cache, int msgID)
     return NULL;
 }
 
-int cache_insert(cache_t* cache, msg_t* message)
+int reset_cache(cache_t* cache)
 {
-    if(cache->cache_dll->count < CACHESIZE)
+    if(cache == NULL)
     {
-        return dll_push_front(cache->cache_dll, message);
+        return -1;
     }
-    else
+
+    while(cache->cache_dll->count > 0)
     {
-        msg_t* old_msg = dll_pop_back(cache->cache_dll);
-        free(old_msg);
-        return dll_push_front(cache->cache_dll, message);
+        msg_t* msg = dll_pop_front(cache->cache_dll);
+        free(msg);
     }
+
+    cache->hits = 0;
+    cache->misses = 0;
+
+    return 1;
 }
 
 void free_cache(cache_t* cache)
@@ -76,12 +104,15 @@ void free_cache(cache_t* cache)
 
 void print_cache(cache_t* cache)
 {
-    msg_t* msg;
+    if(cache == NULL)
+    {
+        return;
+    }
     node_t* iterator = cache->cache_dll->head;
 
     while(iterator != NULL)
     {
-        msg = iterator->data;
+        msg_t* msg = iterator->data;
         if(iterator->next == NULL)
         {
             printf("%d\n", msg->id);
