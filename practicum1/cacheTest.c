@@ -58,7 +58,7 @@ int unitTest0()
         result = 1;
     }
 
-    free(myCache);
+    free_cache(myCache);
 
     return result;
 }
