@@ -755,6 +755,7 @@ int unitTest34()
         result = 1;
     }
 
+    free(data_0);
     free_dll(test_dll);
     return result;
 }
@@ -773,6 +774,7 @@ int unitTest35()
         result = 1;
     }
 
+    free(data_0);
     free_dll(test_dll);
     return result;
 }
@@ -791,6 +793,7 @@ int unitTest36()
         result = 1;
     }
 
+    free(data_0);
     return result;
 }
 
