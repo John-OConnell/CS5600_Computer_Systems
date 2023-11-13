@@ -6,7 +6,7 @@
 #
 #
 
-all: dllTest lruTest randTest
+all: test eval
 
 test: dllTest lruTest randTest
 
@@ -30,3 +30,4 @@ randEval: message.c randCache.c genRandWord.c dll.c cacheEval.c
 clean:
 	@rm -f dllTest lruTest randTest lruEval randEval
 	@rm -f test messages/*
+	@touch message.c lruCache.c randCache.c cacheTest.c dll.c dllTest.c genRandWord.c

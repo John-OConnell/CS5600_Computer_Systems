@@ -52,7 +52,8 @@ msg_t* create_msg(const char* sender, const char* receiver, const char* content)
  *
  * @param message: instance of the message struct
  * 
- * @return 1 if success, -1 if failure
+ * @return: 1 on success
+ *         -1 on failure
  * 
  */
 int store_msg(const msg_t* message){
@@ -87,13 +88,13 @@ int store_msg(const msg_t* message){
 
 /*
  * Retrieves a message
- * If messages is in the cache, retrieves from cache
+ * If message is in the cache, retrieves from cache
  * If not, retrieves from disk and updates cache
  *
  * @param msgID: the id of the message to be retrieved
  * 
- * @return retrievedMsg: pointer to the message struct retrievd.
- *                       Returns NULL if message cannot be retrieved.
+ * @return retrievedMsg: pointer to the message struct retrievd
+ *                       or NULL if message cannot be retrieved
  * 
  */
 msg_t* retrieve_msg(cache_t* cache, unsigned int msgID){

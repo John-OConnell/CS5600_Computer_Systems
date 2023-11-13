@@ -17,7 +17,7 @@ typedef struct dummyData
     int data;
 } data_t;
 
-// Creates an empty dll for testing.
+// Creates an empty dll for testing
 static dll_t *create_empty_dll()
 {
     dll_t *empty_dll = (dll_t *)malloc(sizeof(dll_t));
@@ -28,7 +28,7 @@ static dll_t *create_empty_dll()
     return empty_dll;
 }
 
-// Creates a dll with only one node for testing.
+// Creates a dll with only one node for testing
 static dll_t *create_one_node_dll()
 {
     dll_t* empty_dll = (dll_t*)malloc(sizeof(dll_t));
@@ -48,7 +48,7 @@ static dll_t *create_one_node_dll()
     return empty_dll;
 }
 
-// Creates a dll with four nodes for testing.
+// Creates a dll with four nodes for testing
 static dll_t *create_test_dll()
 {
     dll_t *test_dll = (dll_t *)malloc(sizeof(dll_t));
@@ -86,7 +86,7 @@ static dll_t *create_test_dll()
     return test_dll;
 }
 
-// Checks the node in the given dll.
+// Checks the node in the specified position within a dll
 static int check_node_data(dll_t *l, int pos)
 {
     if ((l == NULL) || (pos < 0) || (pos >= l->count))
@@ -779,7 +779,7 @@ int unitTest35()
     return result;
 }
 
-// Test insert fail null
+// Test insert fail NULL
 int unitTest36()
 {
     int result = 0;
@@ -877,7 +877,7 @@ int unitTest41()
     return result;
 }
 
-// Test get fail null
+// Test get fail NULL
 int unitTest42()
 {
     int result = 0;

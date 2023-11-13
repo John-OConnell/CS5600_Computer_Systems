@@ -9,9 +9,13 @@
 #include "dll.h"
 #include <stdlib.h>
 
-// Creates a DLL
-// Returns a pointer to a newly created DLL.
-// Returns NULL if we could not allocate memory.
+/*
+ * Creates a DLL
+ * 
+ * @return my_dll: pointer to a newly created DLL
+ *                 or NULL if memory not allocated
+ * 
+ */
 dll_t* create_dll()
 {
     dll_t* my_dll = (dll_t*)malloc(sizeof(dll_t));
@@ -28,11 +32,16 @@ dll_t* create_dll()
     return my_dll;
 }
 
-// DLL Empty
-// Check if the DLL is empty
-// Returns 1 if true (The DLL is completely empty)
-// Returns 0 if false (the DLL has at least one element enqueued)
-// Returns -1 if the dll is NULL.
+/*
+ * Checks if the DLL is empty
+ *
+ * @param l: an instance of a DLL
+ * 
+ * @return: 1 if the DLL is empty
+ *          0 if the DLL is NOT empty
+ *         -1 if the DLL is NULL
+ * 
+ */
 int dll_empty(dll_t* l)
 {
     if (l == NULL)
@@ -43,10 +52,17 @@ int dll_empty(dll_t* l)
     return l->count == 0;
 }
 
-// push a new item to the front of the DLL (before the first node in the list).
-// Returns 1 on success
-// Returns 0 on failure (i.e. we couldn't allocate memory for the new node)
-// Returns -1 if DLL is NULL.
+/*
+ * Push a new item to the front of a DLL
+ *
+ * @param l: an instance of a DLL
+ * @param item: the item to be added to the DLL
+ * 
+ * @return: 1 on success
+ *          0 on failure
+ *         -1 if the DLL is NULL
+ * 
+ */
 int dll_push_front(dll_t* l, void* item)
 {
     if (l == NULL)
@@ -82,10 +98,17 @@ int dll_push_front(dll_t* l, void* item)
     return 1;
 }
 
-// push a new item to the end of the DLL (after the last node in the list).
-// Returns 1 on success
-// Returns 0 on failure (i.e. we couldn't allocate memory for the new node)
-// Returns -1 if DLL is NULL.
+/*
+ * Push a new item to the back of a DLL
+ *
+ * @param l: an instance of a DLL
+ * @param item: the item to be added to the DLL
+ * 
+ * @return: 1 on success
+ *          0 on failure
+ *         -1 if the DLL is NULL
+ * 
+ */
 int dll_push_back(dll_t* l, void* item)
 {
     if (l == NULL)
@@ -121,10 +144,15 @@ int dll_push_back(dll_t* l, void* item)
     return 1;
 }
 
-// Returns the first item in the DLL and also removes it from the list.
-// Returns 0 on failure, i.e. there is noting to pop from the list.
-// Returns a -1 if the DLL is NULL.
-// Assume no negative numbers in the list or the number zero.
+/*
+ * Removes and returns the first item in a DLL
+ *
+ * @param l: an instance of a DLL
+ * 
+ * @return data: the item removed from the list
+ *               or NULL if the list is empty or NULL
+ * 
+ */
 void* dll_pop_front(dll_t* l)
 {
     if (l == NULL)
@@ -158,10 +186,15 @@ void* dll_pop_front(dll_t* l)
     return data;
 }
 
-// Returns the last item in the DLL, and also removes it from the list.
-// Returns 0 on failure, i.e. there is noting to pop from the list.
-// Returns a -1 if the DLL is NULL.
-// Assume no negative numbers in the list or the number zero.
+/*
+ * Removes and returns the last item in a DLL
+ *
+ * @param l: an instance of a DLL
+ * 
+ * @return data: the item removed from the list
+ *               or NULL if the list is empty or NULL
+ * 
+ */
 void* dll_pop_back(dll_t* l)
 {
     if (l == NULL)
@@ -195,14 +228,18 @@ void* dll_pop_back(dll_t* l)
     return data;
 }
 
-// Inserts a new node before the node at the specified position.
-// Returns 1 on success
-// Returns 0 on failure:
-//  * we couldn't allocate memory for the new node
-//  * we tried to insert at a negative location.
-//  * we tried to insert past the size of the list
-//   (inserting at the size should be equivalent as calling push_back).
-// Returns -1 if the list is NULL
+/*
+ * Inserts a new node before the node at the specified position
+ *
+ * @param l: an instance of a DLL
+ * @param pos: the position to insert the node
+ * @param item: the item to be inserted
+ * 
+ * @return: 1 on success
+ *          0 on failure
+ *         -1 if the DLL is NULL
+ * 
+ */
 int dll_insert(dll_t* l, int pos, void* item)
 {
     if (l == NULL)
@@ -249,13 +286,17 @@ int dll_insert(dll_t* l, int pos, void* item)
     return 1;
 }
 
-// Returns the item at position pos starting at 0 (0 being the first item)
-//  (does not remove the item)
-// Returns 0 on failure:
-//  * we tried to get at a negative location.
-//  * we tried to get past the size of the list
-// Returns -1 if the list is NULL
-// Assume no negative numbers in the list or the number zero.
+/*
+ * Returns the item at the specified position (does not remove the item)
+ *
+ * @param l: an instance of a DLL
+ * @param pos: the position to get the item
+ * 
+ * @return data: the item removed from the list
+ *               or NULL if the list is empty or NULL
+ *               or NULL if the position is out of bounds
+ * 
+ */
 void* dll_get(dll_t* l, int pos)
 {
     if (l == NULL)
@@ -277,12 +318,17 @@ void* dll_get(dll_t* l, int pos)
     return iterator->data;
 }
 
-// Removes the item at position pos starting at 0 (0 being the first item)
-// Returns 0 on failure:
-//  * we tried to remove at a negative location.
-//  * we tried to remove get past the size of the list
-// Returns -1 if the list is NULL
-// Assume no negative numbers in the list or the number zero.
+/*
+ * Removes and returns the item at the specified position
+ *
+ * @param l: an instance of a DLL
+ * @param pos: the position to remove the item
+ * 
+ * @return data: the item removed from the list
+ *               or NULL if the list is empty or NULL
+ *               or NULL if the position is out of bounds
+ * 
+ */
 void* dll_remove(dll_t* l, int pos)
 {
     if (l == NULL)
@@ -322,9 +368,15 @@ void* dll_remove(dll_t* l, int pos)
     return data;
 }
 
-// DLL Size
-// Queries the current size of a DLL
-// Returns -1 if the DLL is NULL.
+/*
+ * Queries the current size of a DLL
+ *
+ * @param l: an instance of a DLL
+ * 
+ * @return: the size of the DLL
+ *          or -1 if the DLL is NULL
+ * 
+ */
 int dll_size(dll_t* l)
 {
     if (l == NULL)
@@ -335,9 +387,14 @@ int dll_size(dll_t* l)
     return l->count;
 }
 
-// Free DLL
-// Removes a DLL and all of its elements from memory.
-// This should be called before the program terminates.
+/*
+ * Removes a DLL and all its elements from memory
+ *
+ * @param l: an instance of a DLL
+ * 
+ * @return: program crashes if DLL is null
+ * 
+ */
 void free_dll(dll_t* l)
 {
     if (l == NULL)

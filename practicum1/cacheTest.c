@@ -15,13 +15,21 @@
 
 cache_t* testCache;
 
+/*
+ * Creates a message struct with random variables
+ * 
+ * @return newMsg: new populated message struct
+ * 
+ */
 msg_t* create_rand_msg()
 {
+    // initialize necessary message variables
     char* sender = genRandWord();
     char* receiver = genRandWord();
     char* word;
     char* message = (char*)calloc(MSGSIZE, sizeof(char));
 
+    // populating the message with random words
     for(int i = 0; i < 5; i++)
     {
         word = genRandWord();
@@ -34,6 +42,7 @@ msg_t* create_rand_msg()
     strcat(message, word);
     free(word);
     
+    // creating the message to be returned
     msg_t* newMsg = create_msg(sender, receiver, message);
 
     free(sender);
@@ -63,7 +72,7 @@ int unitTest0()
     return result;
 }
 
-// Test check_cache, insert into empty cache
+// Test cache_insert, insert into empty cache
 int unitTest1()
 {
     int result = 0;
@@ -79,7 +88,7 @@ int unitTest1()
     return result;
 }
 
-// Test check_cache, insert into non-empty cache
+// Test cache_insert, insert into non-empty cache
 int unitTest2()
 {
     int result = 0;
@@ -97,7 +106,7 @@ int unitTest2()
     return result;
 }
 
-// Test check_cache, insert into full cache
+// Test cache_insert, insert into full cache
 int unitTest3()
 {
     int result = 0;
@@ -119,7 +128,7 @@ int unitTest3()
     return result;
 }
 
-// Test check_cache with null cache
+// Test cache_insert with null cache
 int unitTest4()
 {
     int result = 0;
@@ -143,8 +152,8 @@ int unitTest5()
     int result = 0;
     msg_t* testMsg = create_rand_msg();
     cache_insert(testCache, testMsg);
-
     msg_t* retrievedMsg = check_cache(testCache, testMsg->id);
+
     if(retrievedMsg->id == testMsg->id)
     {
         result = 1;
@@ -155,7 +164,7 @@ int unitTest5()
     return result;
 }
 
-// Test check_cache without message present
+// Test check_cache with no message present
 int unitTest6()
 {
     int result = 0;
@@ -169,7 +178,7 @@ int unitTest6()
     return result;
 }
 
-// Test check cache null cache
+// Test check_cache null cache
 int unitTest7()
 {
     int result = 0;
@@ -184,7 +193,7 @@ int unitTest7()
     return result;
 }
 
-// Test reset cache
+// Test reset_cache
 int unitTest8()
 {
     int result = 0;
@@ -208,7 +217,8 @@ int unitTest8()
 
     return result;
 }
-// Test reset cache null cache
+
+// Test reset_cache null cache
 int unitTest9()
 {
     int result = 0;
@@ -223,10 +233,9 @@ int unitTest9()
     return result;
 }
 
-// test adding one message to cache
+// Test adding one message to cache
 int unitTest10()
 {
-
     msg_t* testMsg = retrieve_msg(testCache, 1);
     if(testMsg->id != 1)
     {
@@ -241,13 +250,11 @@ int unitTest10()
     reset_cache(testCache);
 
     return 1;
-
 }
 
-// test adding two messages to cache
+// Test adding two messages to cache
 int unitTest11()
 {
-    
     msg_t* testMsg = retrieve_msg(testCache, 2);
     if(testMsg->id != 2)
     {
@@ -270,10 +277,9 @@ int unitTest11()
     return 1;
 }
 
-// test adding three messages to cache
+// Test adding three messages to cache
 int unitTest12()
 {
-
     msg_t* testMsg = retrieve_msg(testCache, 3);
     if(testMsg->id != 3)
     {
@@ -300,13 +306,11 @@ int unitTest12()
     reset_cache(testCache);
 
     return 1;
-
 }
 
-// test replacement strategy when retrieving message already in cache
+// Test replacement strategy when retrieving message already in cache
 int unitTest13()
 {
-
     msg_t* testMsg = retrieve_msg(testCache, 3);
     if(testMsg->id != 3)
     {
@@ -339,13 +343,11 @@ int unitTest13()
     reset_cache(testCache);
 
     return 1;
-
 }
 
-// test replacement strategy when retrieving one message not in cache
+// Test replacement strategy when retrieving one message not in cache
 int unitTest14()
 {
-
     msg_t* testMsg = retrieve_msg(testCache, 3);
     if(testMsg->id != 3)
     {
@@ -378,13 +380,11 @@ int unitTest14()
     reset_cache(testCache);
 
     return 1;
-
 }
 
-// test replacement strategy when retrieving two messages not in cache
+// Test replacement strategy when retrieving two messages not in cache
 int unitTest15()
 {
-
     msg_t* testMsg = retrieve_msg(testCache, 3);
     if(testMsg->id != 3)
     {
@@ -423,10 +423,9 @@ int unitTest15()
     reset_cache(testCache);
 
     return 1;
-
 }
 
-// test replacement strategy when retrieving three messages not in cache
+// Test replacement strategy when retrieving three messages not in cache
 int unitTest16()
 {
 
@@ -474,12 +473,9 @@ int unitTest16()
     reset_cache(testCache);
 
     return 1;
-
 }
 
-
-
-// list of unit tests 
+// List of unit tests 
 int (*unitTests[])(int)={
     unitTest0,
     unitTest1,

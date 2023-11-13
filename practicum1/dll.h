@@ -9,7 +9,7 @@
 #ifndef MYDLL_H
 #define MYDLL_H
 
-// Create a node data structure to store data within the DLL.
+// Node data structure to store data within the DLL
 typedef struct node
 {
     void* data;
@@ -17,14 +17,12 @@ typedef struct node
     struct node* previous;
 } node_t;
 
-// Create a DLL data structure
-// Our DLL holds a pointer to the first node in our DLL called head,
-// and a pointer to the last node in our DLL called tail.
+// DLL data structure
 typedef struct DLL
 {
-    int count;    // count keeps track of how many items are in the DLL.
-    node_t* head; // head points to the first node in our DLL.
-    node_t* tail; // tail points to the last node in our DLL.
+    int count;    // count keeps track of how many items are in the DLL
+    node_t* head; // head points to the first node in the DLL
+    node_t* tail; // tail points to the last node in the DLL
 } dll_t;
 
 dll_t* create_dll();

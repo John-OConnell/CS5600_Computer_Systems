@@ -12,6 +12,12 @@
 #include "cache.h"
 #include "message.h"
 
+/*
+ * Creates a cache struct
+ * 
+ * @return my_cache: new populated cache struct
+ * 
+ */
 cache_t* create_cache()
 {
     cache_t* my_cache = (cache_t*)malloc(sizeof(cache_t));
@@ -28,6 +34,18 @@ cache_t* create_cache()
     return my_cache;
 }
 
+/*
+ * Inserts a message into the cache
+ *
+ * @param cache: an instance of a cache
+ * @param message: the message to be inserted
+ * @param item: the item to be inserted
+ * 
+ * @return: 1 on success
+ *          0 on failure
+ *         -1 if the cache is NULL
+ * 
+ */
 int cache_insert(cache_t* cache, msg_t* message)
 {
     if(cache == NULL)
@@ -48,6 +66,17 @@ int cache_insert(cache_t* cache, msg_t* message)
     }
 }
 
+/*
+ * Checks for a message in the cache and returns it if present
+ *
+ * @param cache: an instance of a cache
+ * @param msgID: the ID of the message to be returned
+ * 
+ * @return msg: the requested message
+ *              or NULL if the message isn't in the cache
+ *              or NULL if the cache is NULL
+ * 
+ */
 msg_t* check_cache(cache_t* cache, int msgID)
 {
     if(cache == NULL)
@@ -69,6 +98,15 @@ msg_t* check_cache(cache_t* cache, int msgID)
     return NULL;
 }
 
+/*
+ * Empties a cache and resets the hit and miss counters
+ *
+ * @param cache: an instance of a cache
+ * 
+ * @return: 1 on success
+ *         -1 if the cache is NULL
+ * 
+ */
 int reset_cache(cache_t* cache)
 {
     if(cache == NULL)
@@ -88,6 +126,14 @@ int reset_cache(cache_t* cache)
     return 1;
 }
 
+/*
+ * Removes a cache and all its elements from memory
+ *
+ * @param cache: an instance of a cache
+ * 
+ * @return: program crashes if cache is null
+ * 
+ */
 void free_cache(cache_t* cache)
 {
     if (cache == NULL)
@@ -99,6 +145,12 @@ void free_cache(cache_t* cache)
     free(cache);
 }
 
+/*
+ * Prints message IDs of all messages in a cache
+ *
+ * @param cache: an instance of a cache
+ * 
+ */
 void print_cache(cache_t* cache)
 {
     if(cache == NULL)
