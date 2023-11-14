@@ -1,9 +1,9 @@
 ## Overview
 
 This is my implementation of *Practicum I - Caching* for CS5600 F23. \
-This assignment builds upon the previous Memory Hierarchy Simulation assignment. An description of this assignment is as follows:
+This assignment builds upon the previous Memory Hierarchy Simulation assignment. A description of this assignment is as follows:
 
-*Currently, messages are stored on disk (in either a file per message stored in a folder, or a block per message in a single file).\
+*Currently, messages are stored on the disk (in either a file per message stored in a folder, or a block per message in a single file).\
 Finding a message therefore requires access to disk. In this part, you will add a "cache" so that some number of messages are stored\
 in a paged structure in memory. Your messages must be a fixed size; the choice of size is yours (but should be a power of 2, e.g.,\
 256, 512, or 1024 bytes). Of course, part of the message's bytes are used for "house keeping" such as identification of the sender\
@@ -16,7 +16,7 @@ as you see fit for development and testing.*
 
 *Having a cache means that every messages that is stored ("sent") is stored in the cache and also written to disk. When a message is\
 read (found), it should first be looked for in cache. If the message cannot be found in the cache, the message needs to be loaded\
-from disk and place in the cache.*
+from disk and placed in the cache.*
 
 *Create appropriate lookup data structures to facilitate finding messages in the cache. In your code, thoroughly describe your\
 strategy and design and why you chose it. Mention alternative designs and why you did not consider them. You may discuss your\
@@ -27,8 +27,11 @@ For this project I chose to implement my cache using a Doubly Linked List (DLL) 
 and one that is simple enough to execute. In my implementation, each node in the DLL contains pointers to the previous and next\
 nodes in the list, as well as a pointer to the message struct being stored. For the LRU cache, the order of nodes reflects the access\
 history, with the most recently accessed message at the front and the least recently accessed at the end. For the random cache, the\
-order of messages is of course random. With the DLL implementation most operations take take O(n) time worst case. However, in the LRU\
-implementation, finding the most recently and least recently used messages takes O(1) time. 
+order of messages is, of course, random. With the DLL implementation most operations take take O(n) time worst case. However, in the LRU\
+implementation, finding the most recently and least recently used messages takes O(1) time. When messages are stored, they are saved\
+directly to the disk. When messages are retrieved, they are first looked for in the cache. If a message cannot be found in the cache, the\
+message is laoded from disk and placed in the cache. The cache keeps track of the number of hits and misses during retrieval by way of\
+counter variables within the cache struct.
 
 A second option I considered was adding a hash table to my implementation in order to make lookups run in O(1) time. The keys of the hash\
 map represent message identifiers, and the corresponding values store references to the nodes in the doubly linked list containing the messages.\
@@ -72,9 +75,11 @@ efficienty and simplicity in both the LRU implementation as well as the random i
 
 Running "make" in the project directory will build all test and evaluation executables. The test executables are called dllTest,\
 lruTest, and randTest. These are used to test the doubly linked list, LRU Cache, and Random Cache respectivley. The evaluation\
-executables are called lruEval and randEval. These are used to evaluate the LRU Cache and Random Cache respectively. In order to build\
-just the test files or just the evaluation files, run "make test" or "make eval". Running "make clean" will remove all executables\
-and all messages from messages directory.
+executables are called lruEval, lruEvalLoc, randEval, and randEvalLoc. These are used to evaluate the LRU Cache and Random Cache.\
+The lruEval and randEval files randomly access stored messages, while the lruEvalLoc and randEvalLoc files use temporal locality,\
+where different subsets of messages are accessed more frequently for certain periods. In order to build just the test files or\
+just the evaluation files, run "make test" or "make eval". Running "make clean" will remove all executables and all messages from\
+the messages directory.
 
 Finally, it is advised to use a cache size of 3 for testing and 16 for evaluation. The cache size can be set by the global variable\
 CACHESIZE found in the cache.h header file.
