@@ -66,6 +66,8 @@ int main(){
     }
 
     // loop to access messages
+    // uses temporal locality so that different subsets of messages are 
+    // accessed more frequently for certain periods
     for(int i = 0; i < 1000; i++)
     {
         if(i < 250)
