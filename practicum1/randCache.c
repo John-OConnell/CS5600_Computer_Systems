@@ -91,10 +91,12 @@ msg_t* check_cache(cache_t* cache, int msgID)
         msg_t* msg = iterator->data;
         if(msg->id == msgID)
         {
+            cache->hits++;
             return msg;
         }
         iterator = iterator->next;
     }
+    cache->misses++;
     return NULL;
 }
 

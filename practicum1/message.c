@@ -103,7 +103,6 @@ msg_t* retrieve_msg(cache_t* cache, unsigned int msgID){
     retrievedMsg = check_cache(cache, msgID);
     if(retrievedMsg != NULL)
     {
-        cache->hits++;
         return retrievedMsg;
     }
     
@@ -147,7 +146,6 @@ msg_t* retrieve_msg(cache_t* cache, unsigned int msgID){
         store_msg(retrievedMsg);
     }
 
-    cache->misses++;
     cache_insert(cache, retrievedMsg);
 
     return retrievedMsg;

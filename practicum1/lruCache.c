@@ -94,11 +94,13 @@ msg_t* check_cache(cache_t* cache, int msgID)
         {
             msg_t* hit = dll_remove(cache->cache_dll, pos);
             dll_push_front(cache->cache_dll, hit);
+            cache->hits++;
             return hit;
         }
         iterator = iterator->next;
         pos++;
     }
+    cache->misses++;
     return NULL;
 }
 
