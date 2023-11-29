@@ -15,6 +15,10 @@
 
 #include "server-helper.h"
 
+// Define constants for the server IP and port
+#define SERVER_IP "127.0.0.1"
+//#define SERVER_IP "10.141.76.133"
+#define SERVER_PORT 9002
 
 int main(void)
 {
@@ -33,8 +37,8 @@ int main(void)
   
   // Set port and IP:
   server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(9002);
-  server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  server_addr.sin_port = htons(SERVER_PORT);
+  server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
   
   // Bind to the set port and IP:
   if( bind(server_socket, (struct sockaddr*) &server_addr, sizeof(server_addr)) <0 )

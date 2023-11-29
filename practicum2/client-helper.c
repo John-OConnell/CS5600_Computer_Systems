@@ -17,6 +17,7 @@
 
 // Define constants for the server IP and port
 #define SERVER_IP "127.0.0.1"
+//#define SERVER_IP "10.141.76.133"
 #define SERVER_PORT 9002
 
 /*
@@ -48,8 +49,8 @@ int connectToServer(const char *server_ip, int server_port){
     // Set port and IP the same as server-side
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(9002);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server_addr.sin_port = htons(SERVER_PORT);
+    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
     
     // Send connection request to server
     if(connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
