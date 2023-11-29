@@ -7,27 +7,29 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#include "server-helper.h"
+
+
 int main(void)
 {
   int server_socket, client_socket;
-  socklen_t client_size;
   struct sockaddr_in server_addr, client_addr;
-  char client_message[256];
-  char server_message[256];
+  char message_buffer[8704];
+  int status = -1;
   
   // Create socket:
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
-  
-  if(server_socket < 0){
+  if(server_socket < 0)
+  {
     printf("Error while creating socket\n");
     return -1;
   }
-  printf("Socket created successfully\n");
   
   // Set port and IP:
   server_addr.sin_family = AF_INET;
@@ -35,31 +37,29 @@ int main(void)
   server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
   
   // Bind to the set port and IP:
-  if( bind(server_socket, (struct sockaddr*) &server_addr, sizeof(server_addr)) <0 ){
+  if( bind(server_socket, (struct sockaddr*) &server_addr, sizeof(server_addr)) <0 )
+  {
     printf("Couldn't bind to the port\n");
     return -1;
   }
-  printf("Done with binding\n");
   
   // Listen for clients:
-  if(listen(server_socket, 1) < 0){
+  if(listen(server_socket, 1) < 0)
+  {
     printf("Error while listening\n");
     return -1;
   }
   printf("\nListening for incoming connections.....\n");
   
   while(1){
-
-    // Clean buffers:
-    memset(server_message, '\0', sizeof(server_message));
-    memset(client_message, '\0', sizeof(client_message));
+    memset(message_buffer, '\0', sizeof(message_buffer));
 
     // Accept an incoming connection:
-    client_size = sizeof(client_addr);
+    socklen_t client_size = sizeof(client_addr);
     client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_size);
-    
-    if (client_socket < 0){
-      printf("Can't accept\n");
+    if (client_socket < 0)
+    {
+      printf("Can't accept client connection\n");
       return -1;
     }
 
@@ -68,17 +68,35 @@ int main(void)
           ntohs(client_addr.sin_port));
     
     // Receive client's message:
-    if (recv(client_socket, client_message, sizeof(client_message), 0) < 0){
-      printf("Couldn't receive\n");
+    if (recv(client_socket, message_buffer, sizeof(message_buffer), 0) < 0)
+    {
+      printf("Can't receive message from client\n");
+      close(client_socket);
       return -1;
     }
-    printf("Msg from client: %s\n", client_message);
+
+    // Get the message type of the recieved message
+    uint32_t messageType;
+    memcpy(&messageType, message_buffer, sizeof(uint32_t));
     
+    switch (messageType) {
+
+      case WRITE:
+        printf("Handling write message from client\n");
+        writeMsg_t* client_message = (writeMsg_t*)malloc(sizeof(writeMsg_t));
+        memcpy(client_message, message_buffer, sizeof(writeMsg_t));
+        status = write_handler(client_message);
+        break;
+
+      default:
+        break;
+    }
+
     // Respond to client:
-    strcpy(server_message, "This is the server's response message.");
-    
-    if (send(client_socket, server_message, strlen(server_message), 0) < 0){
-      printf("Can't send\n");
+    if (send(client_socket, &status, sizeof(int), 0) < 0)
+    {
+      printf("Can't status to client\n");
+      close(client_socket);
       return -1;
     }
     // Closing the socket:

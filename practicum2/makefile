@@ -8,11 +8,12 @@
 
 all: server client
 
-server: server.c
-	gcc server.c -o server
+server: server.c server-helper.c
+	gcc server.c server-helper.c -o server
 
-client: client.c
-	gcc client.c -o client
+client: client.c client-helper.c
+	gcc client.c client-helper.c -o rfs
 
 clean:
-	rm -f server client
+	rm -f server rfs
+	touch client.c client-helper.c server.c server-helper.c

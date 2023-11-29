@@ -6,16 +6,24 @@
 //
 //
 
+#ifndef MSGTYPES_H
+#define MSGTYPES_H
+
+#define MAXFILESIZE 8192
+
 // Enum to represent different message types
 enum MSGTYPE {
         WRITE
     ,   GET
     ,   REMOVE
+    ,   LS
 };
 
-struct writeMsg {
-    int msgType = WRITE;  // Operation code
-    char fileName[256];  // File name
-    int contentLength;  // Length of content
-    char content[8192];  // Actual file content
-};
+typedef struct writeMsg {
+    int msgType;  // Operation code
+    char filePath[256];  // File name
+    size_t contentLength;  // Length of content
+    char content[MAXFILESIZE];  // Actual file content
+} writeMsg_t;
+
+#endif

@@ -12,60 +12,43 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include "msgTypes.h"
+#include "client-helper.h"
 
-int main(void)
+int main(int argc, char* argv[])
 {
-  int socket_desc;
-  struct sockaddr_in server_addr;
-  char server_message[2000], client_message[2000];
-  
-  // Clean buffers:
-  memset(server_message,'\0',sizeof(server_message));
-  memset(client_message,'\0',sizeof(client_message));
-  
-  // Create socket:
-  socket_desc = socket(AF_INET, SOCK_STREAM, 0);
-  
-  if(socket_desc < 0){
-    printf("Unable to create socket\n");
-    return -1;
+  // check that correct # of arguments are passed in
+	if (argc < 3 || argc > 4)
+	{
+		printf("INVALID INPUT - See Below for Help\n\n");
+		print_help();
+		return -1;
+	}
+
+  // get necessary variables from input
+	char* command = argv[1];
+
+  // process input
+	if (strcmp(command, "WRITE") == 0)
+	{
+    char* local_file_path = argv[2];
+    char* remote_file_path;
+    if (argc == 4)
+    {
+      remote_file_path = argv[3];
+    }
+    else
+    {
+      remote_file_path = argv[2];
+    }
+
+		rfs_write(local_file_path, remote_file_path);
+		return 0;
+	}
+  else
+  {
+    printf("INVALID INPUT - See Below for Help\n\n");
+		print_help();
+		return -1;
   }
-  
-  printf("Socket created successfully\n");
-  
-  // Set port and IP the same as server-side:
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(9002);
-  server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-  
-  // Send connection request to server:
-  if(connect(socket_desc, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
-    printf("Unable to connect\n");
-    return -1;
-  }
-  printf("Connected with server successfully\n");
-  
-  // Get input from the user:
-  printf("Enter message: ");
-  gets(client_message);
-  
-  // Send the message to server:
-  if(send(socket_desc, client_message, strlen(client_message), 0) < 0){
-    printf("Unable to send message\n");
-    return -1;
-  }
-  
-  // Receive the server's response:
-  if(recv(socket_desc, server_message, sizeof(server_message), 0) < 0){
-    printf("Error while receiving server's msg\n");
-    return -1;
-  }
-  
-  printf("Server's response: %s\n",server_message);
-  
-  // Close the socket:
-  close(socket_desc);
-  
   return 0;
 }
