@@ -59,17 +59,17 @@ int connectToServer(const char *server_ip, int server_port){
         return -1;
     }
 
+    // Return socket
     return client_socket;
 }
 
 int rfs_write(char* local_file_path, char* remote_file_path){
 
-    printf("local_file_path: %s\n", local_file_path);
-    printf("remote_file_path: %s\n", remote_file_path);
     int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
 
-
+    // Create message to send to server
     writeMsg_t message;
+
     message.msgType = WRITE;
     strcpy(message.filePath, remote_file_path);
 
@@ -77,6 +77,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
     FILE* file = fopen(local_file_path, "r");
     if (file == NULL) {
         perror("Error opening file");
+        close(client_socket);
         return -1;
     }
 
@@ -87,21 +88,24 @@ int rfs_write(char* local_file_path, char* remote_file_path){
     if (message.contentLength > MAXFILESIZE)
     {
         printf("File too big! Aborting Write\n");
+        close(client_socket);
         return -1;
     }
 
     // Read the file content into the struct
     fread(message.content, 1, message.contentLength, file);
 
+    // Close the file
     fclose(file);
 
     // Copy message struct into buffer
     char buffer[sizeof(writeMsg_t)];
     memcpy(buffer, &message, sizeof(writeMsg_t));
 
-    // Send the serialized struct over the network
+    // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        perror("Send failed");
+        printf("Send failed");
+        close(client_socket);
         return -1;
     }
 
@@ -110,6 +114,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
     if(recv(client_socket, &status, sizeof(int), 0) < 0)
     {
         printf("Error while receiving server's msg\n");
+        close(client_socket);
         return -1;
     }
 
@@ -124,4 +129,87 @@ int rfs_write(char* local_file_path, char* remote_file_path){
 
     return 0;
 
+}
+
+int rfs_get(char* local_file_path, char* remote_file_path){
+
+    int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
+
+    // Empty struct to receive a future message from the server
+    getRetMsg_t server_message;
+
+    // Create message to send to server
+    getMsg_t message;
+    message.msgType = GET;
+    strcpy(message.filePath, remote_file_path);
+
+    // Copy message struct into buffer
+    char buffer[sizeof(getMsg_t)];
+    memcpy(buffer, &message, sizeof(getMsg_t));
+
+    // Send the message buffer over the network
+    if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
+        printf("Send failed\n");
+        return -1;
+    }
+
+    // Receive server's message
+    if (recv(client_socket, &server_message, sizeof(server_message), 0) < 0)
+    {
+      printf("Can't receive message from server\n");
+      close(client_socket);
+      return -1;
+    }
+    
+
+    if (server_message.msgType != GETRET)
+    {
+        printf("Error receiving message from server\n");
+        close(client_socket);
+        return -1;
+    }
+    else if (!server_message.fileFound)
+    {
+        printf("File doesn't exist on the server!\n");
+    }
+    else
+    {
+        // Open the file for reading
+        FILE *file = fopen(local_file_path, "w");
+        if (file == NULL)
+        {
+            printf("Error opening file");
+            return -1;
+        }
+
+        // Read the message content into the file
+        size_t bytes_written = fwrite(server_message.content, 1, server_message.contentLength, file);
+        if (bytes_written != server_message.contentLength)
+        {
+            printf("Error writing to file");
+            return -1;
+        }
+
+        fclose(file);
+    }
+
+    // Receive the server's status message
+    int status;
+    if(recv(client_socket, &status, sizeof(int), 0) < 0)
+    {
+        printf("Error while receiving server's msg\n");
+        close(client_socket);
+        return -1;
+    }
+    
+    // Process the status value
+    if (status == 1) {
+        printf("Command executed successfully\n");
+    } else {
+        printf("Command execution failed\n");
+    }
+
+    close(client_socket);
+
+    return 0;
 }

@@ -8,6 +8,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
 #include "server-helper.h"
 
 // Define constant for rfs directory location
@@ -20,17 +24,12 @@ int write_handler(writeMsg_t* client_message){
     size_t contentLength;  // Length of content
     char content[MAXFILESIZE];  // Actual file content
 
-    printf("msgType: %d\n", client_message->msgType);
-    printf("File path: %s\n", client_message->filePath);
-    printf("content length: %zu\n", client_message->contentLength);
-    printf("File contents: %s\n", client_message->content);
-
     // Prepend ROOTDIR to the beginning of the filePath in client_message
     char rfsFilePath[256 + sizeof(ROOTDIR)];
     strcpy(rfsFilePath, ROOTDIR);
     strcat(rfsFilePath, client_message->filePath);
 
-    FILE *file = fopen(rfsFilePath, "w"); // "wb" for binary write mode
+    FILE *file = fopen(rfsFilePath, "w");
     if (file == NULL)
     {
         printf("Error opening file");
@@ -47,4 +46,55 @@ int write_handler(writeMsg_t* client_message){
     fclose(file);
 
     return 1;
+}
+
+int get_handler(getMsg_t* client_message, int client_socket){
+
+    getRetMsg_t message;
+    message.msgType = GETRET;
+
+    // Prepend ROOTDIR to the beginning of the filePath in client_message
+    char rfsFilePath[256 + sizeof(ROOTDIR)];
+    strcpy(rfsFilePath, ROOTDIR);
+    strcat(rfsFilePath, client_message->filePath);
+
+    // Open the file for reading
+    FILE* file = fopen(rfsFilePath, "r");
+    // If the file can't be found on the server, update the message flag
+    // and send the message
+    if (file == NULL)
+    {
+        message.fileFound = 0;
+        if (send(client_socket, &message, sizeof(getRetMsg_t), 0) < 0)
+        {
+            printf("File retrieval message failed to send to client\n");
+        }
+        return 0;
+    }
+
+    // Update file found flag
+    message.fileFound = 1;
+
+    // Get the size of the file
+    fseek(file, 0, SEEK_END);
+    message.contentLength = (size_t)ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    // Read the file content into the struct
+    fread(message.content, 1, message.contentLength, file);
+
+    fclose(file);
+
+    // Copy message struct into buffer
+    char buffer[sizeof(getRetMsg_t)];
+    memcpy(buffer, &message, sizeof(getRetMsg_t));
+
+    // Send the message buffer over the network
+    if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
+        printf("File retrieval message failed to send to client\n");
+        return 0;
+    }
+
+    return 1;
+
 }

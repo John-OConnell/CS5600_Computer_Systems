@@ -25,7 +25,7 @@ int main(void)
   int server_socket, client_socket;
   struct sockaddr_in server_addr, client_addr;
   char message_buffer[8704];
-  int status = -1;
+  int status;
   
   // Create socket:
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -56,6 +56,8 @@ int main(void)
   printf("\nListening for incoming connections.....\n");
   
   while(1){
+    // Reset the message buffer and status
+    status = -1;
     memset(message_buffer, '\0', sizeof(message_buffer));
 
     // Accept an incoming connection:
@@ -87,19 +89,27 @@ int main(void)
 
       case WRITE:
         printf("Handling write message from client\n");
-        writeMsg_t* client_message = (writeMsg_t*)malloc(sizeof(writeMsg_t));
-        memcpy(client_message, message_buffer, sizeof(writeMsg_t));
-        status = write_handler(client_message);
+        writeMsg_t* write_message = (writeMsg_t*)malloc(sizeof(writeMsg_t));
+        memcpy(write_message, message_buffer, sizeof(writeMsg_t));
+        status = write_handler(write_message);
+        free(write_message);
+        break;
+
+      case GET:
+        printf("Handling get message from client\n");
+        getMsg_t* get_message = (getMsg_t*)malloc(sizeof(getMsg_t));
+        memcpy(get_message, message_buffer, sizeof(getMsg_t));
+        status = get_handler(get_message, client_socket);
         break;
 
       default:
         break;
     }
 
-    // Respond to client:
+    // Send status message to client
     if (send(client_socket, &status, sizeof(int), 0) < 0)
     {
-      printf("Can't status to client\n");
+      printf("Can't send status to client\n");
       close(client_socket);
       return -1;
     }

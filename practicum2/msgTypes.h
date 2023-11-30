@@ -15,6 +15,7 @@
 enum MSGTYPE {
         WRITE
     ,   GET
+    ,   GETRET
     ,   REMOVE
     ,   LS
 };
@@ -25,5 +26,17 @@ typedef struct writeMsg {
     size_t contentLength;  // Length of content
     char content[MAXFILESIZE];  // Actual file content
 } writeMsg_t;
+
+typedef struct getMsg {
+    int msgType;  // Operation code
+    char filePath[256];  // File name
+} getMsg_t;
+
+typedef struct getRetMsg {
+    int msgType;  // Operation code
+    int fileFound; // Flag representing if file was found on server
+    size_t contentLength;  // Length of content
+    char content[MAXFILESIZE];  // Actual file content
+} getRetMsg_t;
 
 #endif

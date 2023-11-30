@@ -16,7 +16,7 @@
 
 int main(int argc, char* argv[])
 {
-  // check that correct # of arguments are passed in
+  // Check that correct # of arguments are passed in
 	if (argc < 3 || argc > 4)
 	{
 		printf("INVALID INPUT - See Below for Help\n\n");
@@ -24,10 +24,10 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-  // get necessary variables from input
+  // Get necessary variables from input
 	char* command = argv[1];
 
-  // process input
+  // Process input
 	if (strcmp(command, "WRITE") == 0)
 	{
     char* local_file_path = argv[2];
@@ -41,8 +41,24 @@ int main(int argc, char* argv[])
       remote_file_path = argv[2];
     }
 
-		rfs_write(local_file_path, remote_file_path);
-		return 0;
+		return rfs_write(local_file_path, remote_file_path);
+
+	}
+	else if (strcmp(command, "GET") == 0)
+	{
+    char* remote_file_path = argv[2];
+    char* local_file_path;
+    if (argc == 4)
+    {
+      local_file_path = argv[3];
+    }
+    else
+    {
+      local_file_path = "newFile";
+    }
+
+		return rfs_get(local_file_path, remote_file_path);
+
 	}
   else
   {
@@ -50,5 +66,4 @@ int main(int argc, char* argv[])
 		print_help();
 		return -1;
   }
-  return 0;
 }
