@@ -15,4 +15,6 @@ int write_handler(writeMsg_t* client_message);
 
 int get_handler(getMsg_t* client_message, int client_socket);
 
+int remove_handler(removeMsg_t* client_message);
+
 #endif

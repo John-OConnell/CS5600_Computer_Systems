@@ -160,7 +160,6 @@ int rfs_get(char* local_file_path, char* remote_file_path){
       close(client_socket);
       return -1;
     }
-    
 
     if (server_message.msgType != GETRET)
     {
@@ -201,7 +200,47 @@ int rfs_get(char* local_file_path, char* remote_file_path){
         close(client_socket);
         return -1;
     }
-    
+    printf("STATUS: %d\n", status);
+    // Process the status value
+    if (status == 1) {
+        printf("Command executed successfully\n");
+    } else {
+        printf("Command execution failed\n");
+    }
+
+    close(client_socket);
+
+    return 0;
+}
+
+int rfs_remove(char* remote_file_path){
+
+    int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
+
+    // Create message to send to server
+    removeMsg_t message;
+    message.msgType = REMOVE;
+    strcpy(message.filePath, remote_file_path);
+
+    // Copy message struct into buffer
+    char buffer[sizeof(removeMsg_t)];
+    memcpy(buffer, &message, sizeof(removeMsg_t));
+
+    // Send the message buffer over the network
+    if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
+        printf("Send failed\n");
+        return -1;
+    }
+
+    // Receive the server's status message
+    int status;
+    if(recv(client_socket, &status, sizeof(int), 0) < 0)
+    {
+        printf("Error while receiving server's msg\n");
+        close(client_socket);
+        return -1;
+    }
+    printf("STATUS: %d\n", status);
     // Process the status value
     if (status == 1) {
         printf("Command executed successfully\n");

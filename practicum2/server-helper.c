@@ -19,11 +19,6 @@
 
 int write_handler(writeMsg_t* client_message){
 
-    int msgType;  // Operation code
-    char filePath[256];  // File name
-    size_t contentLength;  // Length of content
-    char content[MAXFILESIZE];  // Actual file content
-
     // Prepend ROOTDIR to the beginning of the filePath in client_message
     char rfsFilePath[256 + sizeof(ROOTDIR)];
     strcpy(rfsFilePath, ROOTDIR);
@@ -97,4 +92,20 @@ int get_handler(getMsg_t* client_message, int client_socket){
 
     return 1;
 
+}
+
+int remove_handler(removeMsg_t* client_message){
+
+    // Prepend ROOTDIR to the beginning of the filePath in client_message
+    char rfsFilePath[256 + sizeof(ROOTDIR)];
+    strcpy(rfsFilePath, ROOTDIR);
+    strcat(rfsFilePath, client_message->filePath);
+
+    // Attempt to delete the file
+    if (remove(rfsFilePath) == 0) {
+        return 1;
+    }
+
+    return 0;
+    
 }

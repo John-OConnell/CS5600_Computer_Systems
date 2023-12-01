@@ -9,7 +9,7 @@
 #ifndef MSGTYPES_H
 #define MSGTYPES_H
 
-#define MAXFILESIZE 8192
+#define MAXFILESIZE 102400 //8192
 
 // Enum to represent different message types
 enum MSGTYPE {
@@ -38,5 +38,10 @@ typedef struct getRetMsg {
     size_t contentLength;  // Length of content
     char content[MAXFILESIZE];  // Actual file content
 } getRetMsg_t;
+
+typedef struct removeMsg {
+    int msgType;  // Operation code
+    char filePath[256];  // File name
+} removeMsg_t;
 
 #endif

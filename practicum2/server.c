@@ -24,7 +24,7 @@ int main(void)
 {
   int server_socket, client_socket;
   struct sockaddr_in server_addr, client_addr;
-  char message_buffer[8704];
+  char message_buffer[MAXFILESIZE + 512];
   int status;
   
   // Create socket:
@@ -100,9 +100,20 @@ int main(void)
         getMsg_t* get_message = (getMsg_t*)malloc(sizeof(getMsg_t));
         memcpy(get_message, message_buffer, sizeof(getMsg_t));
         status = get_handler(get_message, client_socket);
+        printf("STATUS BACK FROM GET HANDLER: %d\n", status);
+        free(get_message);
+        break;
+
+      case REMOVE:
+        printf("Handling remove message from client\n");
+        removeMsg_t* rm_message = (removeMsg_t*)malloc(sizeof(removeMsg_t));
+        memcpy(rm_message, message_buffer, sizeof(getMsg_t));
+        status = remove_handler(rm_message);
+        free(rm_message);
         break;
 
       default:
+        status = 0;
         break;
     }
 

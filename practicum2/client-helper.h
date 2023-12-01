@@ -17,4 +17,6 @@ int rfs_write(char* local_file_path, char* remote_file_path);
 
 int rfs_get(char* local_file_path, char* remote_file_path);
 
+int rfs_remove(char* remote_file_path);
+
 #endif

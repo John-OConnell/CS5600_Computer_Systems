@@ -60,6 +60,20 @@ int main(int argc, char* argv[])
 		return rfs_get(local_file_path, remote_file_path);
 
 	}
+  else if (strcmp(command, "RM") == 0)
+	{
+    if (argc != 3)
+    {
+      printf("INVALID INPUT - See Below for Help\n\n");
+      print_help();
+      return -1;
+    }
+
+    char* remote_file_path = argv[2];
+
+		return rfs_remove(remote_file_path);
+
+	}
   else
   {
     printf("INVALID INPUT - See Below for Help\n\n");
