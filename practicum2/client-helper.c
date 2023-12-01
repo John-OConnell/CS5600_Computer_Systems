@@ -154,12 +154,15 @@ int rfs_get(char* local_file_path, char* remote_file_path){
     }
 
     // Receive server's message
-    if (recv(client_socket, &server_message, sizeof(server_message), 0) < 0)
-    {
-      printf("Can't receive message from server\n");
-      close(client_socket);
-      return -1;
-    }
+    // if (recv(client_socket, &server_message, sizeof(server_message), 0) < 0)
+    // {
+    //   printf("Can't receive message from server\n");
+    //   close(client_socket);
+    //   return -1;
+    // }
+    int rec = recv(client_socket, &server_message, sizeof(server_message), 0);
+    printf("size of received: %d\n", rec);
+    printf("size of server message: %zu\n", sizeof(server_message));
 
     if (server_message.msgType != GETRET)
     {

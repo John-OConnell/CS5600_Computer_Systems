@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "server-helper.h"
 
@@ -24,8 +25,8 @@ int main(void)
 {
   int server_socket, client_socket;
   struct sockaddr_in server_addr, client_addr;
-  char message_buffer[MAXFILESIZE + 512];
-  int status;
+  socklen_t client_size = sizeof(client_addr);
+  pthread_t tid;
   
   // Create socket:
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -48,7 +49,7 @@ int main(void)
   }
   
   // Listen for clients:
-  if(listen(server_socket, 1) < 0)
+  if(listen(server_socket, 5) < 0)
   {
     printf("Error while listening\n");
     return -1;
@@ -56,12 +57,8 @@ int main(void)
   printf("\nListening for incoming connections.....\n");
   
   while(1){
-    // Reset the message buffer and status
-    status = -1;
-    memset(message_buffer, '\0', sizeof(message_buffer));
-
-    // Accept an incoming connection:
-    socklen_t client_size = sizeof(client_addr);
+    
+    // Accept an incoming connection
     client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_size);
     if (client_socket < 0)
     {
@@ -73,61 +70,16 @@ int main(void)
           inet_ntoa(client_addr.sin_addr), 
           ntohs(client_addr.sin_port));
     
-    // Receive client's message:
-    if (recv(client_socket, message_buffer, sizeof(message_buffer), 0) < 0)
+    // Create a new thread to handle the client
+    if (pthread_create(&tid, NULL, client_handler, (void*)&client_socket) != 0)
     {
-      printf("Can't receive message from client\n");
-      close(client_socket);
-      return -1;
+            perror("Thread creation failed");
+            close(client_socket);
     }
-
-    // Get the message type of the recieved message
-    uint32_t messageType;
-    memcpy(&messageType, message_buffer, sizeof(uint32_t));
-    
-    switch (messageType) {
-
-      case WRITE:
-        printf("Handling write message from client\n");
-        writeMsg_t* write_message = (writeMsg_t*)malloc(sizeof(writeMsg_t));
-        memcpy(write_message, message_buffer, sizeof(writeMsg_t));
-        status = write_handler(write_message);
-        free(write_message);
-        break;
-
-      case GET:
-        printf("Handling get message from client\n");
-        getMsg_t* get_message = (getMsg_t*)malloc(sizeof(getMsg_t));
-        memcpy(get_message, message_buffer, sizeof(getMsg_t));
-        status = get_handler(get_message, client_socket);
-        printf("STATUS BACK FROM GET HANDLER: %d\n", status);
-        free(get_message);
-        break;
-
-      case REMOVE:
-        printf("Handling remove message from client\n");
-        removeMsg_t* rm_message = (removeMsg_t*)malloc(sizeof(removeMsg_t));
-        memcpy(rm_message, message_buffer, sizeof(getMsg_t));
-        status = remove_handler(rm_message);
-        free(rm_message);
-        break;
-
-      default:
-        status = 0;
-        break;
-    }
-
-    // Send status message to client
-    if (send(client_socket, &status, sizeof(int), 0) < 0)
-    {
-      printf("Can't send status to client\n");
-      close(client_socket);
-      return -1;
-    }
-    // Closing the socket:
-    close(client_socket);
   }
+
   close(server_socket);
-  
+
   return 0;
+
 }
