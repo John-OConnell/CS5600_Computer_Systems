@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -16,8 +17,10 @@
 
 #include "server-helper.h"
 
-// Define constant for rfs directory location
+// Define constant for directory locations
 #define ROOTDIR "rfsys/"
+#define VERSDIR "rfsys/vers/"
+#define METADIR "rfsys/meta/"
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -66,6 +69,14 @@ void* client_handler(void* arg) {
       free(rm_message);
       break;
 
+    case LS:
+      printf("Handling ls message from client\n");
+      lsMsg_t* ls_message = (lsMsg_t*)malloc(sizeof(lsMsg_t));
+      memcpy(ls_message, message_buffer, sizeof(lsMsg_t));
+      status = ls_handler(ls_message);
+      free(ls_message);
+      break;
+
     default:
       status = 0;
       break;
@@ -84,36 +95,88 @@ void* client_handler(void* arg) {
 
 int write_handler(writeMsg_t* client_message){
 
-    // Prepend ROOTDIR to the beginning of the filePath in client_message
-    char rfsFilePath[256 + sizeof(ROOTDIR)];
-    strcpy(rfsFilePath, ROOTDIR);
-    strcat(rfsFilePath, client_message->filePath);
+  int status = 0;
+  // Prepend ROOTDIR to the beginning of the filePath in client_message
+  char rfsFilePath[256 + sizeof(ROOTDIR)];
+  strcpy(rfsFilePath, ROOTDIR);
+  strcat(rfsFilePath, client_message->filePath);
 
-    // Lock the mutex before accessing the shared resource (file)
-    pthread_mutex_lock(&mutex);
+  // Lock the mutex before accessing the shared resource (file)
+  pthread_mutex_lock(&mutex);
 
-    FILE *file = fopen(rfsFilePath, "w");
-    if (file == NULL)
+  int prevVersion = 0;
+  int currVersion = 0;
+
+  // Check if file already exists
+  if (access(rfsFilePath, F_OK) == 0)
+  {
+    // Create a new variable to execute the rename function on
+    char rfsFilePathNEW[256 + sizeof(ROOTDIR)];
+    strcpy(rfsFilePathNEW, rfsFilePath);
+
+    // Determine the previous version number
+    //prevVersion = 0;
+
+    // Generate a versioned file name
+    char versFilePath[256 + sizeof(VERSDIR) + 5]; // Assuming a version number <= 99999
+    sprintf(versFilePath, "%sv%d_%s", VERSDIR, prevVersion, client_message->filePath);
+
+    // Check if the versioned file already exists and increment version if necessary
+    while (access(versFilePath, F_OK) == 0)
     {
-        printf("Error opening file");
-        // Unlock the mutex before returning on error
-        pthread_mutex_unlock(&mutex);
-        return -1;
+      prevVersion++;
+      sprintf(versFilePath, "%sv%d_%s", VERSDIR, prevVersion, client_message->filePath);
     }
 
-    size_t bytes_written = fwrite(client_message->content, 1, client_message->contentLength, file);
-    if (bytes_written != client_message->contentLength)
-    {
-        printf("Error writing to file");
-        return -1;
-    }
+    rename(rfsFilePathNEW, versFilePath);
 
-    fclose(file);
+    // Current version for updating metadata
+  currVersion = ++prevVersion;
+  }
 
-    // Release the lock after closing the file
-    pthread_mutex_unlock(&mutex);
+  FILE *file = fopen(rfsFilePath, "w");
+  if (file == NULL)
+  {
+      printf("Error opening file");
+      // Unlock the mutex before returning on error
+      pthread_mutex_unlock(&mutex);
+      return -1;
+  }
 
-    return 1;
+  size_t bytes_written = fwrite(client_message->content, 1, client_message->contentLength, file);
+  if (bytes_written != client_message->contentLength)
+  {
+      printf("Error writing to file");
+      // Close the file before returning on error
+      fclose(file);
+      // Unlock the mutex before returning on error
+      pthread_mutex_unlock(&mutex);
+      return -1;
+  }
+
+  fclose(file);
+
+  // Create metadata struct for updating metadata file
+  metadata_t metadata;
+  // Get the current time
+  time_t t = time(NULL);
+  struct tm *tm_info = localtime(&t);
+
+  // Format the timestamp as "YYYY-MM-DD HH:MM:SS" (adjust as needed)
+  strftime(metadata.timestamp, sizeof(metadata.timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+
+  // Set the version number
+  metadata.versionNumber = currVersion;
+
+  if(write_metadata(client_message->filePath, &metadata) == 0)
+  {
+    status = 1;
+  }
+
+  // Release the lock after closing the file
+  pthread_mutex_unlock(&mutex);
+
+  return status;
 }
 
 int get_handler(getMsg_t* client_message, int client_socket){
@@ -194,4 +257,63 @@ int remove_handler(removeMsg_t* client_message){
     pthread_mutex_unlock(&mutex);
     return 0;
     
+}
+
+int ls_handler(lsMsg_t* client_message)
+{
+  int status = 0;
+  // Prepend ROOTDIR to the beginning of the filePath in client_message
+  char rfsFilePath[256 + sizeof(ROOTDIR)];
+  strcpy(rfsFilePath, ROOTDIR);
+  strcat(rfsFilePath, client_message->filePath);
+
+  // Lock the mutex before accessing the shared resource (file)
+  pthread_mutex_lock(&mutex);
+
+  // Attempt to delete the file
+  if (access(rfsFilePath, F_OK) != 0) {
+      pthread_mutex_unlock(&mutex);
+      return 0;
+  }
+  // Call function to read the metadata
+  if (read_metadata(client_message->filePath) == 0)
+  {
+    status = 1;
+  }
+  // Release the lock after the metadata has been read
+  pthread_mutex_unlock(&mutex);
+  return status;
+}
+
+int write_metadata(const char *origFilePath, const metadata_t *metadata) {
+    char metadataFilePath[256 + sizeof(METADIR) + 12];
+    sprintf(metadataFilePath, "%smetadata_%s", METADIR, origFilePath);
+
+    FILE *metadataFile = fopen(metadataFilePath, "a");  // Open in append mode
+    if (metadataFile == NULL) {
+        printf("Error opening metadata file");
+        return -1 ;
+    }
+
+    fprintf(metadataFile, "%d %s\n", metadata->versionNumber, metadata->timestamp);
+    fclose(metadataFile);
+    return 0;
+}
+
+int read_metadata(const char *origFilePath) {
+    char metadataFilePath[256 + sizeof(METADIR) + 12];
+    sprintf(metadataFilePath, "%smetadata_%s", METADIR, origFilePath);
+
+    FILE *metadataFile = fopen(metadataFilePath, "r");
+    if (metadataFile == NULL) {
+        printf("Error opening metadata file");
+        return -1;
+    }
+    printf("File Name: %s\n", origFilePath);
+    metadata_t metadata;
+    while (fscanf(metadataFile, "%d %s", &metadata.versionNumber, metadata.timestamp) != EOF) {
+        printf("\tVersion Number: %d, Timestamp: %s\n", metadata.versionNumber, metadata.timestamp);
+    }
+    fclose(metadataFile);
+    return 0;
 }

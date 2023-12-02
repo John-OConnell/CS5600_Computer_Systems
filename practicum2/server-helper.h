@@ -11,6 +11,11 @@
 
 #include "msgTypes.h"
 
+typedef struct metadata {
+    char timestamp[32];  // YYYY-MM-DD HH:MM:SS
+    int versionNumber;   // Version number
+} metadata_t;
+
 void* client_handler(void* arg);
 
 int write_handler(writeMsg_t* client_message);
@@ -18,5 +23,11 @@ int write_handler(writeMsg_t* client_message);
 int get_handler(getMsg_t* client_message, int client_socket);
 
 int remove_handler(removeMsg_t* client_message);
+
+int ls_handler(lsMsg_t* client_message);
+
+int write_metadata(const char *origFilePath, const metadata_t *metadata);
+
+int read_metadata(const char *origFilePath);
 
 #endif

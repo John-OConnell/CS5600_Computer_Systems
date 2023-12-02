@@ -44,4 +44,9 @@ typedef struct removeMsg {
     char filePath[256];  // File name
 } removeMsg_t;
 
+typedef struct lsMsg {
+    int msgType;  // Operation code
+    char filePath[256];  // File name
+} lsMsg_t;
+
 #endif

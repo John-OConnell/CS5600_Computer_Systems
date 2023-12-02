@@ -17,3 +17,6 @@ client: client.c client-helper.c
 clean:
 	rm -f server rfs
 	touch client.c client-helper.c server.c server-helper.c
+
+rfsclean:
+	find rfsys/ -maxdepth 2 -type f ! -name '.*' -delete
