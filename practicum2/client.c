@@ -17,7 +17,7 @@
 int main(int argc, char* argv[])
 {
   // Check that correct # of arguments are passed in
-	if (argc < 3 || argc > 4)
+	if (argc < 3 || argc > 5)
 	{
 		printf("INVALID INPUT - See Below for Help\n\n");
 		print_help();
@@ -32,7 +32,13 @@ int main(int argc, char* argv[])
 	{
     char* local_file_path = argv[2];
     char* remote_file_path;
-    if (argc == 4)
+    if (argc == 5)
+    {
+      printf("INVALID INPUT - See Below for Help\n\n");
+		  print_help();
+		  return -1;
+    }
+    else if (argc == 4)
     {
       remote_file_path = argv[3];
     }
@@ -48,16 +54,32 @@ int main(int argc, char* argv[])
 	{
     char* remote_file_path = argv[2];
     char* local_file_path;
-    if (argc == 4)
+
+    // Check if a version number is provided
+    int versionNumber = -1;  // Default version number
+
+    if (argc >= 4)
     {
-      local_file_path = argv[3];
+        // Attempt to parse the last argument as a version number
+        if (sscanf(argv[argc - 1], "%d", &versionNumber) != 1)
+        {
+            // If parsing fails, consider it as a local file path
+            local_file_path = argv[argc - 1];
+        }
+        else
+        {
+          local_file_path = argv[argc - 2];
+        }
     }
     else
     {
       local_file_path = "newFile";
     }
 
-		return rfs_get(local_file_path, remote_file_path);
+    printf("remote path: %s\n", remote_file_path);
+    printf("local path: %s\n", local_file_path);
+
+		return rfs_get(local_file_path, remote_file_path, versionNumber);
 
 	}
   else if (strcmp(command, "RM") == 0)

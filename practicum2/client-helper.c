@@ -11,8 +11,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
-#include "msgTypes.h"
 #include "client-helper.h"
 
 // Define constants for the server IP and port
@@ -131,7 +131,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
 
 }
 
-int rfs_get(char* local_file_path, char* remote_file_path){
+int rfs_get(char* local_file_path, char* remote_file_path, int versionNumber){
 
     int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
 
@@ -142,6 +142,7 @@ int rfs_get(char* local_file_path, char* remote_file_path){
     getMsg_t message;
     message.msgType = GET;
     strcpy(message.filePath, remote_file_path);
+    message.versionNumber = versionNumber;
 
     // Copy message struct into buffer
     char buffer[sizeof(getMsg_t)];
@@ -160,9 +161,9 @@ int rfs_get(char* local_file_path, char* remote_file_path){
     //   close(client_socket);
     //   return -1;
     // }
-    int rec = recv(client_socket, &server_message, sizeof(server_message), 0);
+    int rec = recv(client_socket, &server_message, sizeof(getRetMsg_t), 0);
     printf("size of received: %d\n", rec);
-    printf("size of server message: %zu\n", sizeof(server_message));
+    printf("size of server message: %zu\n", sizeof(getRetMsg_t));
 
     if (server_message.msgType != GETRET)
     {
@@ -273,6 +274,21 @@ int rfs_ls(char* remote_file_path){
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
         printf("Send failed\n");
         return -1;
+    }
+
+    printf("File: %s\n", remote_file_path);
+    metadata_t receivedMetadata;
+
+    while (recv(client_socket, &receivedMetadata, sizeof(metadata_t), 0) > 0)
+    {
+        // Check for the end of the stream
+        if (receivedMetadata.versionNumber == -1 && strcmp(receivedMetadata.timestamp, "") == 0)
+        {
+            break;  // End of stream reached
+        }
+
+        // Print metadata
+        printf("\tVersion Number: %d, Timestamp: %s\n", receivedMetadata.versionNumber, receivedMetadata.timestamp);
     }
 
     // Receive the server's status message

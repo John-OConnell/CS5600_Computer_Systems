@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/stat.h>
 
 #include "server-helper.h"
 
@@ -73,7 +74,7 @@ void* client_handler(void* arg) {
       printf("Handling ls message from client\n");
       lsMsg_t* ls_message = (lsMsg_t*)malloc(sizeof(lsMsg_t));
       memcpy(ls_message, message_buffer, sizeof(lsMsg_t));
-      status = ls_handler(ls_message);
+      status = ls_handler(ls_message, client_socket);
       free(ls_message);
       break;
 
@@ -111,11 +112,8 @@ int write_handler(writeMsg_t* client_message){
   if (access(rfsFilePath, F_OK) == 0)
   {
     // Create a new variable to execute the rename function on
-    char rfsFilePathNEW[256 + sizeof(ROOTDIR)];
-    strcpy(rfsFilePathNEW, rfsFilePath);
-
-    // Determine the previous version number
-    //prevVersion = 0;
+    char rfsFilePathTemp[256 + sizeof(ROOTDIR)];
+    strcpy(rfsFilePathTemp, rfsFilePath);
 
     // Generate a versioned file name
     char versFilePath[256 + sizeof(VERSDIR) + 5]; // Assuming a version number <= 99999
@@ -128,10 +126,10 @@ int write_handler(writeMsg_t* client_message){
       sprintf(versFilePath, "%sv%d_%s", VERSDIR, prevVersion, client_message->filePath);
     }
 
-    rename(rfsFilePathNEW, versFilePath);
+    rename(rfsFilePathTemp, versFilePath);
 
     // Current version for updating metadata
-  currVersion = ++prevVersion;
+    currVersion = ++prevVersion;
   }
 
   FILE *file = fopen(rfsFilePath, "w");
@@ -162,7 +160,7 @@ int write_handler(writeMsg_t* client_message){
   time_t t = time(NULL);
   struct tm *tm_info = localtime(&t);
 
-  // Format the timestamp as "YYYY-MM-DD HH:MM:SS" (adjust as needed)
+  // Format the timestamp as "YYYY-MM-DD HH:MM:SS"
   strftime(metadata.timestamp, sizeof(metadata.timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
 
   // Set the version number
@@ -175,7 +173,7 @@ int write_handler(writeMsg_t* client_message){
 
   // Release the lock after closing the file
   pthread_mutex_unlock(&mutex);
-
+  printf("WRITE STATUS: %d", status);
   return status;
 }
 
@@ -191,8 +189,21 @@ int get_handler(getMsg_t* client_message, int client_socket){
 
     // Lock the mutex before accessing the shared resource (file)
     pthread_mutex_lock(&mutex);
+
+    // Construct the versioned file name based on the requested version
+    char versFilePath[256 + sizeof(VERSDIR) + 12]; // Adjust buffer size accordingly
+    if (client_message->versionNumber >= 0) 
+    {
+        // If a specific version is requested, construct the versioned file path
+        sprintf(versFilePath, "%sv%d_%s", VERSDIR, client_message->versionNumber, client_message->filePath);
+    } else 
+    {
+        // Otherwise, use the default file path
+        strcpy(versFilePath, rfsFilePath);
+    }
+
     // Open the file for reading
-    FILE* file = fopen(rfsFilePath, "r");
+    FILE* file = fopen(versFilePath, "r");
     // If the file can't be found on the server, update the message flag
     // and send the message
     if (file == NULL)
@@ -229,7 +240,9 @@ int get_handler(getMsg_t* client_message, int client_socket){
     memcpy(buffer, &message, sizeof(getRetMsg_t));
 
     // Send the message buffer over the network
-    if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
+    printf("SIZE OF BUFFER: %lu\n", sizeof(buffer));
+    printf("SIZE OF SEND: %lu\n", sizeof(getRetMsg_t));
+    if (send(client_socket, buffer, sizeof(getRetMsg_t), 0) < 0) {
         printf("File retrieval message failed to send to client\n");
         return 0;
     }
@@ -249,17 +262,34 @@ int remove_handler(removeMsg_t* client_message){
     pthread_mutex_lock(&mutex);
 
     // Attempt to delete the file
-    if (remove(rfsFilePath) == 0) {
+    if (remove(rfsFilePath) == 1) {
         pthread_mutex_unlock(&mutex);
-        return 1;
+        return 0;
     }
+
+    // Remove metadata file
+    char metadataFilePath[256 + sizeof(METADIR) + 12];
+    sprintf(metadataFilePath, "%smetadata_%s", METADIR, client_message->filePath);
+    remove(metadataFilePath);
+
+    // Remove versioned files
+    int version = 0;
+    char versFilePath[256 + sizeof(VERSDIR) + 5];
+    sprintf(versFilePath, "%sv%d_%s", VERSDIR, version, client_message->filePath);
+
+    while (access(versFilePath, F_OK) == 0) {
+        remove(versFilePath);
+        version++;
+        sprintf(versFilePath, "%sv%d_%s", VERSDIR, version, client_message->filePath);
+    }
+
     // Release the lock after the file has been removed
     pthread_mutex_unlock(&mutex);
-    return 0;
+    return 1;
     
 }
 
-int ls_handler(lsMsg_t* client_message)
+int ls_handler(lsMsg_t* client_message, int client_socket)
 {
   int status = 0;
   // Prepend ROOTDIR to the beginning of the filePath in client_message
@@ -270,13 +300,24 @@ int ls_handler(lsMsg_t* client_message)
   // Lock the mutex before accessing the shared resource (file)
   pthread_mutex_lock(&mutex);
 
-  // Attempt to delete the file
+  // Check if file exists
   if (access(rfsFilePath, F_OK) != 0) {
+      // Define special metadata struct for the end of the stream
+      metadata_t endOfStreamMetadata = { "", -1 };
+
+      // Send the end of stream marker
+      char endOfStreamBuffer[sizeof(metadata_t)];
+      memcpy(endOfStreamBuffer, &endOfStreamMetadata, sizeof(metadata_t));
+      if (send(client_socket, endOfStreamBuffer, sizeof(endOfStreamBuffer), 0) < 0)
+      {
+          printf("Error sending end of stream marker to client\n");
+          return -1;
+      }
       pthread_mutex_unlock(&mutex);
       return 0;
   }
   // Call function to read the metadata
-  if (read_metadata(client_message->filePath) == 0)
+  if (send_metadata(client_message->filePath, client_socket) == 0)
   {
     status = 1;
   }
@@ -300,7 +341,7 @@ int write_metadata(const char *origFilePath, const metadata_t *metadata) {
     return 0;
 }
 
-int read_metadata(const char *origFilePath) {
+int send_metadata(const char *origFilePath, int client_socket) {
     char metadataFilePath[256 + sizeof(METADIR) + 12];
     sprintf(metadataFilePath, "%smetadata_%s", METADIR, origFilePath);
 
@@ -309,11 +350,33 @@ int read_metadata(const char *origFilePath) {
         printf("Error opening metadata file");
         return -1;
     }
-    printf("File Name: %s\n", origFilePath);
+
     metadata_t metadata;
-    while (fscanf(metadataFile, "%d %s", &metadata.versionNumber, metadata.timestamp) != EOF) {
-        printf("\tVersion Number: %d, Timestamp: %s\n", metadata.versionNumber, metadata.timestamp);
+    while (fscanf(metadataFile, "%d %[^\n]", &metadata.versionNumber, metadata.timestamp) != EOF)
+    {
+        // Create a buffer to hold metadata and send it to the client
+        char buffer[sizeof(metadata_t)];
+        memcpy(buffer, &metadata, sizeof(metadata_t));
+
+        if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
+            printf("Error sending metadata to client\n");
+            fclose(metadataFile);
+            return -1;
+        }
     }
+
+    // Define a special metadata struct for the end of the stream
+    metadata_t endOfStreamMetadata = { "", -1 };
+
+    // Send the end of stream marker
+    char endOfStreamBuffer[sizeof(metadata_t)];
+    memcpy(endOfStreamBuffer, &endOfStreamMetadata, sizeof(metadata_t));
+    if (send(client_socket, endOfStreamBuffer, sizeof(endOfStreamBuffer), 0) < 0)
+    {
+        printf("Error sending end of stream marker to client\n");
+        return -1;
+    }
+
     fclose(metadataFile);
     return 0;
 }

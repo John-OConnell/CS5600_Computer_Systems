@@ -20,3 +20,4 @@ clean:
 
 rfsclean:
 	find rfsys/ -maxdepth 2 -type f ! -name '.*' -delete
+

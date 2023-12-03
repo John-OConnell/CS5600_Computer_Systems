@@ -9,7 +9,7 @@
 #ifndef MSGTYPES_H
 #define MSGTYPES_H
 
-#define MAXFILESIZE 102400 //8192
+#define MAXFILESIZE 8192 //102400 
 
 // Enum to represent different message types
 enum MSGTYPE {
@@ -19,6 +19,11 @@ enum MSGTYPE {
     ,   REMOVE
     ,   LS
 };
+
+typedef struct metadata {
+    char timestamp[32];  // YYYY-MM-DD HH:MM:SS
+    int versionNumber;   // Version number
+} metadata_t;
 
 typedef struct writeMsg {
     int msgType;  // Operation code
@@ -30,6 +35,7 @@ typedef struct writeMsg {
 typedef struct getMsg {
     int msgType;  // Operation code
     char filePath[256];  // File name
+    int versionNumber;
 } getMsg_t;
 
 typedef struct getRetMsg {
