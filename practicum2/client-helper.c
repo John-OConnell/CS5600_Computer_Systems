@@ -36,13 +36,23 @@ void print_help(){
 	printf("  HELP          Print this help message.\n");
 }
 
+/*
+ * Creates a client socket and connects it to the server
+ *
+ * @param server_ip: the IP address of the server
+ * @param server_port: the port number of the server
+ * 
+ * @return client_socket: the client socket number
+ *
+ * 
+ */
 int connectToServer(const char *server_ip, int server_port){
 
     // Create socket
     int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(client_socket < 0)
     {
-        printf("Unable to create socket\n");
+        perror("Unable to create socket\n");
         return -1;
     }
     
@@ -55,7 +65,7 @@ int connectToServer(const char *server_ip, int server_port){
     // Send connection request to server
     if(connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
     {
-        printf("Unable to connect to server\n");
+        perror("Unable to connect to server\n");
         return -1;
     }
 
@@ -63,6 +73,16 @@ int connectToServer(const char *server_ip, int server_port){
     return client_socket;
 }
 
+/*
+ * Writes a file to the remote server
+ *
+ * @param local_file_path: the file path on the local machine
+ * @param remote_file_path: the file path on the remote server
+ * 
+ * @return: 0 on success
+ *         -1 on failure
+ * 
+ */
 int rfs_write(char* local_file_path, char* remote_file_path){
 
     int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
@@ -87,7 +107,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
     fseek(file, 0, SEEK_SET);
     if (message.contentLength > MAXFILESIZE)
     {
-        printf("File too big! Aborting Write\n");
+        perror("File too big! Aborting Write\n");
         close(client_socket);
         return -1;
     }
@@ -104,7 +124,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        printf("Send failed");
+        perror("Write message send failed");
         close(client_socket);
         return -1;
     }
@@ -113,7 +133,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
     int status;
     if(recv(client_socket, &status, sizeof(int), 0) < 0)
     {
-        printf("Error while receiving server's msg\n");
+        perror("Error while receiving server's message\n");
         close(client_socket);
         return -1;
     }
@@ -131,6 +151,16 @@ int rfs_write(char* local_file_path, char* remote_file_path){
 
 }
 
+/*
+ * Retrieves a file from the remote server
+ *
+ * @param local_file_path: the file path on the local machine
+ * @param remote_file_path: the file path on the remote server
+ * 
+ * @return: 0 on success
+ *         -1 on failure
+ * 
+ */
 int rfs_get(char* local_file_path, char* remote_file_path, int versionNumber){
 
     int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
@@ -150,30 +180,27 @@ int rfs_get(char* local_file_path, char* remote_file_path, int versionNumber){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        printf("Send failed\n");
+        perror("Get message send failed\n");
         return -1;
     }
 
     // Receive server's message
-    // if (recv(client_socket, &server_message, sizeof(server_message), 0) < 0)
-    // {
-    //   printf("Can't receive message from server\n");
-    //   close(client_socket);
-    //   return -1;
-    // }
-    int rec = recv(client_socket, &server_message, sizeof(getRetMsg_t), 0);
-    printf("size of received: %d\n", rec);
-    printf("size of server message: %zu\n", sizeof(getRetMsg_t));
+    if (recv(client_socket, &server_message, sizeof(server_message), 0) < 0)
+    {
+      perror("Can't receive message from server\n");
+      close(client_socket);
+      return -1;
+    }
 
     if (server_message.msgType != GETRET)
     {
-        printf("Error receiving message from server\n");
+        perror("Incorrect/invalid message type received from server\n");
         close(client_socket);
         return -1;
     }
     else if (!server_message.fileFound)
     {
-        printf("File doesn't exist on the server!\n");
+        perror("File doesn't exist on the server!\n");
     }
     else
     {
@@ -181,7 +208,7 @@ int rfs_get(char* local_file_path, char* remote_file_path, int versionNumber){
         FILE *file = fopen(local_file_path, "w");
         if (file == NULL)
         {
-            printf("Error opening file");
+            perror("Error opening file");
             return -1;
         }
 
@@ -189,27 +216,11 @@ int rfs_get(char* local_file_path, char* remote_file_path, int versionNumber){
         size_t bytes_written = fwrite(server_message.content, 1, server_message.contentLength, file);
         if (bytes_written != server_message.contentLength)
         {
-            printf("Error writing to file");
+            perror("Error writing to file");
             return -1;
         }
 
         fclose(file);
-    }
-
-    // Receive the server's status message
-    int status;
-    if(recv(client_socket, &status, sizeof(int), 0) < 0)
-    {
-        printf("Error while receiving server's msg\n");
-        close(client_socket);
-        return -1;
-    }
-    printf("STATUS: %d\n", status);
-    // Process the status value
-    if (status == 1) {
-        printf("Command executed successfully\n");
-    } else {
-        printf("Command execution failed\n");
     }
 
     close(client_socket);
@@ -217,6 +228,15 @@ int rfs_get(char* local_file_path, char* remote_file_path, int versionNumber){
     return 0;
 }
 
+/*
+ * Removes a file from the remote server
+ *
+ * @param remote_file_path: the file path on the remote server
+ * 
+ * @return: 0 on success
+ *         -1 on failure
+ * 
+ */
 int rfs_remove(char* remote_file_path){
 
     int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
@@ -232,7 +252,7 @@ int rfs_remove(char* remote_file_path){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        printf("Send failed\n");
+        perror("Remove message send failed\n");
         return -1;
     }
 
@@ -240,11 +260,11 @@ int rfs_remove(char* remote_file_path){
     int status;
     if(recv(client_socket, &status, sizeof(int), 0) < 0)
     {
-        printf("Error while receiving server's msg\n");
+        perror("Error while receiving server's message\n");
         close(client_socket);
         return -1;
     }
-    printf("STATUS: %d\n", status);
+
     // Process the status value
     if (status == 1) {
         printf("Command executed successfully\n");
@@ -257,6 +277,15 @@ int rfs_remove(char* remote_file_path){
     return 0;
 }
 
+/*
+ * Gets all versioning information for a file
+ *
+ * @param remote_file_path: the file path on the remote server
+ * 
+ * @return: 0 on success
+ *         -1 on failure
+ * 
+ */
 int rfs_ls(char* remote_file_path){
 
     int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
@@ -272,13 +301,13 @@ int rfs_ls(char* remote_file_path){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        printf("Send failed\n");
+        perror("LS message send failed\n");
         return -1;
     }
 
-    printf("File: %s\n", remote_file_path);
     metadata_t receivedMetadata;
 
+    // Receive metadata from server
     while (recv(client_socket, &receivedMetadata, sizeof(metadata_t), 0) > 0)
     {
         // Check for the end of the stream
@@ -291,20 +320,34 @@ int rfs_ls(char* remote_file_path){
         printf("\tVersion Number: %d, Timestamp: %s\n", receivedMetadata.versionNumber, receivedMetadata.timestamp);
     }
 
-    // Receive the server's status message
-    int status;
-    if(recv(client_socket, &status, sizeof(int), 0) < 0)
-    {
-        printf("Error while receiving server's msg\n");
-        close(client_socket);
+    close(client_socket);
+
+    return 0;
+}
+
+/*
+ * Stops the server
+ * 
+ * @return: 0 on success
+ *         -1 on failure
+ * 
+ */
+int rfs_stop(){
+
+    int client_socket = connectToServer(SERVER_IP, SERVER_PORT);
+
+    // Create message to send to server
+    stopMsg_t message;
+    message.msgType = STOP;
+
+    // Copy message struct into buffer
+    char buffer[sizeof(stopMsg_t)];
+    memcpy(buffer, &message, sizeof(stopMsg_t));
+
+    // Send the message buffer over the network
+    if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
+        perror("Stop command send failed\n");
         return -1;
-    }
-    printf("STATUS: %d\n", status);
-    // Process the status value
-    if (status == 1) {
-        printf("Command executed successfully\n");
-    } else {
-        printf("Command execution failed\n");
     }
 
     close(client_socket);

@@ -23,4 +23,6 @@ int rfs_remove(char* remote_file_path);
 
 int rfs_ls(char* remote_file_path);
 
+int rfs_stop();
+
 #endif

@@ -17,14 +17,14 @@
 int main(int argc, char* argv[])
 {
   // Check that correct # of arguments are passed in
-	if (argc < 3 || argc > 5)
+	if (argc < 2 || argc > 5)
 	{
 		printf("INVALID INPUT - See Below for Help\n\n");
 		print_help();
 		return -1;
 	}
 
-  // Get necessary variables from input
+  // Get command from input
 	char* command = argv[1];
 
   // Process input
@@ -32,7 +32,8 @@ int main(int argc, char* argv[])
 	{
     char* local_file_path = argv[2];
     char* remote_file_path;
-    if (argc == 5)
+    // Write command can't have 2 or 5 arguments
+    if (argc == 2 || argc == 5)
     {
       printf("INVALID INPUT - See Below for Help\n\n");
 		  print_help();
@@ -58,32 +59,37 @@ int main(int argc, char* argv[])
     // Check if a version number is provided
     int versionNumber = -1;  // Default version number
 
-    if (argc >= 4)
+    // Get command can't have 2
+    if (argc == 2)
     {
-        // Attempt to parse the last argument as a version number
-        if (sscanf(argv[argc - 1], "%d", &versionNumber) != 1)
-        {
-            // If parsing fails, consider it as a local file path
-            local_file_path = argv[argc - 1];
-        }
-        else
-        {
-          local_file_path = argv[argc - 2];
-        }
+      printf("INVALID INPUT - See Below for Help\n\n");
+		  print_help();
+		  return -1;
+    }
+    else if (argc >= 4)
+    {
+      // Attempt to parse the last argument as a version number
+      if (sscanf(argv[argc - 1], "%d", &versionNumber) != 1)
+      {
+          // If parsing fails, consider it as a local file path
+          local_file_path = argv[argc - 1];
+      }
+      else
+      {
+        local_file_path = argv[argc - 2];
+      }
     }
     else
     {
       local_file_path = "newFile";
     }
 
-    printf("remote path: %s\n", remote_file_path);
-    printf("local path: %s\n", local_file_path);
-
 		return rfs_get(local_file_path, remote_file_path, versionNumber);
 
 	}
   else if (strcmp(command, "RM") == 0)
 	{
+    // Remove command must have 3 arguments
     if (argc != 3)
     {
       printf("INVALID INPUT - See Below for Help\n\n");
@@ -98,6 +104,7 @@ int main(int argc, char* argv[])
 	}
   else if (strcmp(command, "LS") == 0)
 	{
+    // LS command must have 3 arguments
     if (argc != 3)
     {
       printf("INVALID INPUT - See Below for Help\n\n");
@@ -110,6 +117,18 @@ int main(int argc, char* argv[])
 		return rfs_ls(remote_file_path);
 
 	}
+  else if (strcmp(command, "STOP") == 0)
+	{
+    // Stop command must have 2 arguments
+    if (argc != 2)
+    {
+      printf("INVALID INPUT - See Below for Help\n\n");
+      print_help();
+      return -1;
+    }
+    rfs_stop();
+
+  }
   else
   {
     printf("INVALID INPUT - See Below for Help\n\n");

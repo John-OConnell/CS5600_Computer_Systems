@@ -9,7 +9,7 @@
 #ifndef MSGTYPES_H
 #define MSGTYPES_H
 
-#define MAXFILESIZE 8192 //102400 
+#define MAXFILESIZE 102400 //100 KBs
 
 // Enum to represent different message types
 enum MSGTYPE {
@@ -18,6 +18,7 @@ enum MSGTYPE {
     ,   GETRET
     ,   REMOVE
     ,   LS
+    ,   STOP
 };
 
 typedef struct metadata {
@@ -54,5 +55,9 @@ typedef struct lsMsg {
     int msgType;  // Operation code
     char filePath[256];  // File name
 } lsMsg_t;
+
+typedef struct stopMsg {
+    int msgType;  // Operation code
+} stopMsg_t;
 
 #endif

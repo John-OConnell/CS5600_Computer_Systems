@@ -11,7 +11,10 @@
 
 #include "msgTypes.h"
 
-void* client_handler(void* arg);
+extern volatile sig_atomic_t close_server;
+extern pthread_mutex_t close_server_mutex;
+
+void* client_handler(void* s_socket);
 
 int write_handler(writeMsg_t* client_message);
 
