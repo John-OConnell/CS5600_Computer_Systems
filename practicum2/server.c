@@ -18,8 +18,8 @@
 #include "server-helper.h"
 
 // Define constants for the server IP and port
-//#define SERVER_IP "127.0.0.1"
-#define SERVER_IP "192.168.18.26"
+#define SERVER_IP "127.0.0.1"
+//#define SERVER_IP "192.168.18.26"
 #define SERVER_PORT 9002
 
 // Global variables to account for STOP command
@@ -73,7 +73,7 @@ int main(void)
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
   if(server_socket < 0)
   {
-    perror("Error while creating socket\n");
+    perror("Error while creating socket");
     return -1;
   }
   
@@ -85,14 +85,14 @@ int main(void)
   // Bind to the set port and IP:
   if( bind(server_socket, (struct sockaddr*) &server_addr, sizeof(server_addr)) <0 )
   {
-    perror("Server couldn't bind to the port\n");
+    perror("Server couldn't bind to the port");
     return -1;
   }
   
   // Listen for clients
   if(listen(server_socket, 5) < 0)
   {
-    perror("Error while listening for clients\n");
+    perror("Error while listening for clients");
     return -1;
   }
 

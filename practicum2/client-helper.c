@@ -17,7 +17,7 @@
 
 // Define constants for the server IP and port
 #define SERVER_IP "127.0.0.1"
-//#define SERVER_IP "10.141.76.133"
+//#define SERVER_IP "192.168.18.26"
 #define SERVER_PORT 9002
 
 /*
@@ -52,7 +52,7 @@ int connectToServer(const char *server_ip, int server_port){
     int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(client_socket < 0)
     {
-        perror("Unable to create socket\n");
+        perror("Unable to create socket");
         return -1;
     }
     
@@ -65,7 +65,7 @@ int connectToServer(const char *server_ip, int server_port){
     // Send connection request to server
     if(connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
     {
-        perror("Unable to connect to server\n");
+        perror("Unable to connect to server");
         return -1;
     }
 
@@ -107,7 +107,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
     fseek(file, 0, SEEK_SET);
     if (message.contentLength > MAXFILESIZE)
     {
-        perror("File too big! Aborting Write\n");
+        perror("File too big! Aborting Write");
         close(client_socket);
         return -1;
     }
@@ -133,7 +133,7 @@ int rfs_write(char* local_file_path, char* remote_file_path){
     int status;
     if(recv(client_socket, &status, sizeof(int), 0) < 0)
     {
-        perror("Error while receiving server's message\n");
+        perror("Error while receiving server's message");
         close(client_socket);
         return -1;
     }
@@ -180,27 +180,27 @@ int rfs_get(char* local_file_path, char* remote_file_path, int versionNumber){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        perror("Get message send failed\n");
+        perror("Get message send failed");
         return -1;
     }
 
     // Receive server's message
     if (recv(client_socket, &server_message, sizeof(server_message), 0) < 0)
     {
-      perror("Can't receive message from server\n");
+      perror("Can't receive message from server");
       close(client_socket);
       return -1;
     }
 
     if (server_message.msgType != GETRET)
     {
-        perror("Incorrect/invalid message type received from server\n");
+        perror("Incorrect/invalid message type received from server");
         close(client_socket);
         return -1;
     }
     else if (!server_message.fileFound)
     {
-        perror("File doesn't exist on the server!\n");
+        perror("File doesn't exist on the server!");
     }
     else
     {
@@ -252,7 +252,7 @@ int rfs_remove(char* remote_file_path){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        perror("Remove message send failed\n");
+        perror("Remove message send failed");
         return -1;
     }
 
@@ -260,7 +260,7 @@ int rfs_remove(char* remote_file_path){
     int status;
     if(recv(client_socket, &status, sizeof(int), 0) < 0)
     {
-        perror("Error while receiving server's message\n");
+        perror("Error while receiving server's message");
         close(client_socket);
         return -1;
     }
@@ -301,7 +301,7 @@ int rfs_ls(char* remote_file_path){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        perror("LS message send failed\n");
+        perror("LS message send failed");
         return -1;
     }
 
@@ -348,7 +348,7 @@ int rfs_stop(){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-        perror("Stop command send failed\n");
+        perror("Stop command send failed");
         return -1;
     }
 

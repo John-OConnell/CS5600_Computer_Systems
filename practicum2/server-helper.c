@@ -44,7 +44,7 @@ void* client_handler(void* socket) {
   // Receive client's message:
   if (recv(client_socket, message_buffer, sizeof(message_buffer), 0) < 0)
   {
-    perror("Error receiving message from client\n");
+    perror("Error receiving message from client");
     close(client_socket);
     pthread_exit(NULL);
   }
@@ -113,7 +113,7 @@ void* client_handler(void* socket) {
     // Send status message to client
     if (send(client_socket, &status, sizeof(int), 0) < 0)
     {
-      perror("Error sending status to client\n");
+      perror("Error sending status to client");
     }
     sleep(1);
   }
@@ -370,7 +370,7 @@ int get_handler(getMsg_t* client_message, int client_socket){
 
     // Send the message buffer over the network
     if (send(client_socket, buffer, sizeof(getRetMsg_t), 0) < 0) {
-        perror("File retrieval message failed to send to client\n");
+        perror("File retrieval message failed to send to client");
         return 0;
     }
 
@@ -475,7 +475,7 @@ int ls_handler(lsMsg_t* client_message, int client_socket) {
       memcpy(endOfStreamBuffer, &endOfStreamMetadata, sizeof(metadata_t));
       if (send(client_socket, endOfStreamBuffer, sizeof(endOfStreamBuffer), 0) < 0)
       {
-          perror("Error sending end of stream marker to client\n");
+          perror("Error sending end of stream marker to client");
           return -1;
       }
       // Unlock the mutex before returning
@@ -624,7 +624,7 @@ int send_metadata(char *origFilePath, int client_socket) {
         memcpy(buffer, &metadata, sizeof(metadata_t));
 
         if (send(client_socket, buffer, sizeof(buffer), 0) < 0) {
-            perror("Error sending metadata to client\n");
+            perror("Error sending metadata to client");
             fclose(metadataFile);
             return -1;
         }
@@ -638,7 +638,7 @@ int send_metadata(char *origFilePath, int client_socket) {
     memcpy(endOfStreamBuffer, &endOfStreamMetadata, sizeof(metadata_t));
     if (send(client_socket, endOfStreamBuffer, sizeof(endOfStreamBuffer), 0) < 0)
     {
-        perror("Error sending end of stream marker to client\n");
+        perror("Error sending end of stream marker to client");
         return -1;
     }
 

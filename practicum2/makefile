@@ -19,5 +19,5 @@ clean:
 	touch client.c client-helper.c server.c server-helper.c
 
 rfsclean:
-	find rfsys/ -maxdepth 2 -type f ! -name '.*' -delete
+	find rfsys/ -maxdepth 3 -type f ! -name '.*' -delete
 
