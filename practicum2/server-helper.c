@@ -110,7 +110,6 @@ void* client_handler(void* socket) {
   // other commands involve sending a message back to the client
   if(messageType == WRITE || messageType == REMOVE)
   {
-    printf("Sending status\n");
     // Send status message to client
     if (send(client_socket, &status, sizeof(int), 0) < 0)
     {
@@ -406,7 +405,7 @@ int remove_handler(removeMsg_t* client_message){
 
     // Lock the mutex before accessing the file
     pthread_mutex_lock(&mutex);
-    printf("rfsFilePath: %s\n", rfsFilePath);
+
     // Attempt to delete the file
     if (remove(rfsFilePath) == 1) {
         pthread_mutex_unlock(&mutex);
@@ -425,8 +424,9 @@ int remove_handler(removeMsg_t* client_message){
     {
       sprintf(metadataFilePath, "%smetadata_%s", METADIR, fileName);
     }
+
     remove(metadataFilePath);
-    printf("metadataFilePath: %s\n", metadataFilePath);
+
     // Remove versioned files
     int version = 0;
     char versFilePath[256 + sizeof(VERSDIR) + 5];
