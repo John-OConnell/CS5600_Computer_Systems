@@ -23,4 +23,9 @@ about a file or folder, and deleting a file or folder).*
 - Makefile            - makefile used to build project executables
 
 ## Instructions to Run
-
+Running "make" in the project directory will build all executables. The server can be started by running "./server", while the commands to\
+intereact with the remote file system are all run through the "./rfs" executable. Running "./rfs HELP" will display the help menu with options\
+on the different commands that can be run. The server and client IP address and ports can be configured as global variables in the server.c\
+and client-helper.c files, respectively. A unit test shell script is provided, which can be run with "./unitTest.sh". It's important to note\
+that you must start the server before running the shell script, or the execution will fail. Running "make clean" will remove all executalbes,\
+and running "make rfsysclean" will remove any new files added to the remote file system. 
