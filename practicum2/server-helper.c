@@ -110,11 +110,13 @@ void* client_handler(void* socket) {
   // other commands involve sending a message back to the client
   if(messageType == WRITE || messageType == REMOVE)
   {
+    printf("Sending status\n");
     // Send status message to client
     if (send(client_socket, &status, sizeof(int), 0) < 0)
     {
       perror("Error sending status to client\n");
     }
+    sleep(1);
   }
 
   // Closing the socket:
