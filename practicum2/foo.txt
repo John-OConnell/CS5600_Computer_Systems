@@ -3,5 +3,3 @@ Hello World!
 This is a test.
 
 I hope it works :)
-
-NEW VERS

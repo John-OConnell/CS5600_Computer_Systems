@@ -11,6 +11,7 @@
 #include <string.h>
 #include <signal.h> 
 #include <time.h>
+#include <libgen.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -137,6 +138,23 @@ int write_handler(writeMsg_t* client_message){
   int prevVersion = 0;
   int currVersion = 0;
 
+  // Extract the directory part of the path
+  char directoryPath[256];
+  strcpy(directoryPath, client_message->filePath);
+  char* lastSlash = strrchr(directoryPath, '/');
+  if (lastSlash != NULL)
+  {
+      *lastSlash = '\0';  // Remove the file name
+  }
+
+  // Get the file name
+  char *fileName = basename(client_message->filePath);
+
+  // Get rfs directory path
+  char rfsDirPath[256 + sizeof(ROOTDIR)];
+  strcpy(rfsDirPath, ROOTDIR);
+  strcat(rfsDirPath, directoryPath);
+
   // Prepend ROOTDIR to the beginning of the filePath in client_message
   char rfsFilePath[256 + sizeof(ROOTDIR)];
   strcpy(rfsFilePath, ROOTDIR);
@@ -144,6 +162,20 @@ int write_handler(writeMsg_t* client_message){
 
   // Lock the mutex before accessing the file
   pthread_mutex_lock(&mutex);
+
+  // If a path was provided instead of just a file name
+  if(strcmp(fileName, directoryPath) != 0 )
+  {
+    // Check if the directory exists, and if not, create it
+    struct stat st = {0};
+    if (stat(rfsDirPath, &st) == -1) {
+        if (mkdir(rfsDirPath, 0700) == -1) {
+            perror("mkdir failed");
+            pthread_mutex_unlock(&mutex);
+            return -1;  // Failed to create the directory
+        }
+    }
+  }
 
   // Check if file already exists
   if (access(rfsFilePath, F_OK) == 0)
@@ -154,18 +186,46 @@ int write_handler(writeMsg_t* client_message){
 
     // Generate a versioned file name
     char versFilePath[256 + sizeof(VERSDIR) + 5]; // Assuming a version number <= 99999
-    sprintf(versFilePath, "%sv%d_%s", VERSDIR, prevVersion, client_message->filePath);
 
-    // Check if the versioned file already exists and increment version if necessary
-    while (access(versFilePath, F_OK) == 0)
+    // If a path was provided instead of just a file name
+    if(strcmp(fileName, directoryPath) != 0 )
     {
-      prevVersion++;
-      sprintf(versFilePath, "%sv%d_%s", VERSDIR, prevVersion, client_message->filePath);
-    }
+      // Generate a versioned file directory
+      char versDirPath[256 + sizeof(VERSDIR)]; // Assuming a version number <= 99999
+      sprintf(versDirPath, "%s%s", VERSDIR, directoryPath);
 
+      // Check if the directory exists, and if not, create it
+      struct stat st = {0};
+      if (stat(versDirPath, &st) == -1)
+      {
+          if (mkdir(versDirPath, 0700) == -1)
+          {
+              perror("mkdir failed");
+              pthread_mutex_unlock(&mutex);
+              return -1;  // Failed to create the directory
+          }
+      }
+      sprintf(versFilePath, "%s%s/v%d_%s", VERSDIR, directoryPath, prevVersion, fileName);
+      // Check if the versioned file already exists and increment version if necessary
+      while (access(versFilePath, F_OK) == 0)
+      {
+        prevVersion++;
+        sprintf(versFilePath, "%s%s/v%d_%s", VERSDIR, directoryPath, prevVersion, fileName);
+      }
+    }
+    // Otherwise it was just a file name that was provided
+    else
+    {
+      sprintf(versFilePath, "%sv%d_%s", VERSDIR, prevVersion, fileName);
+      // Check if the versioned file already exists and increment version if necessary
+      while (access(versFilePath, F_OK) == 0)
+      {
+        prevVersion++;
+        sprintf(versFilePath, "%sv%d_%s", VERSDIR, prevVersion, fileName);
+      }
+    }
     // Move the current file into the vers directory with new versioned name
     rename(rfsFilePathTemp, versFilePath);
-
     // Current version used for updating metadata
     currVersion = ++prevVersion;
   }
@@ -230,6 +290,18 @@ int get_handler(getMsg_t* client_message, int client_socket){
     getRetMsg_t message;
     message.msgType = GETRET;
 
+    // Extract the directory part of the path
+    char directoryPath[256];
+    strcpy(directoryPath, client_message->filePath);
+    char* lastSlash = strrchr(directoryPath, '/');
+    if (lastSlash != NULL)
+    {
+        *lastSlash = '\0';  // Remove the file name
+    }
+
+    // Get the file name
+    char *fileName = basename(client_message->filePath);
+
     // Prepend ROOTDIR to the beginning of the filePath in client_message
     char rfsFilePath[256 + sizeof(ROOTDIR)];
     strcpy(rfsFilePath, ROOTDIR);
@@ -242,8 +314,16 @@ int get_handler(getMsg_t* client_message, int client_socket){
     char versFilePath[256 + sizeof(VERSDIR) + 12]; // Adjust buffer size accordingly
     if (client_message->versionNumber >= 0) 
     {
-        // If a specific version is requested, construct the versioned file path
-        sprintf(versFilePath, "%sv%d_%s", VERSDIR, client_message->versionNumber, client_message->filePath);
+        // If a path was provided instead of just a file name
+      if(strcmp(fileName, directoryPath) != 0 )
+      {
+        sprintf(versFilePath, "%s%s/v%d_%s", VERSDIR, directoryPath, client_message->versionNumber, fileName);
+      }
+      // Otherwise it was just a file name that was provided
+      else
+      {
+        sprintf(versFilePath, "%sv%d_%s", VERSDIR, client_message->versionNumber, fileName);
+      }
     } else 
     {
         // Otherwise, use the default file path
@@ -306,6 +386,16 @@ int get_handler(getMsg_t* client_message, int client_socket){
  * 
  */
 int remove_handler(removeMsg_t* client_message){
+    // Get the directory part of the original file path
+    char directoryPath[256];
+    strncpy(directoryPath, client_message->filePath, sizeof(directoryPath));
+    char *lastSlash = strrchr(directoryPath, '/');
+    if (lastSlash != NULL) {
+        *lastSlash = '\0';  // Remove the file name
+    }
+
+    // Get the file name
+    char *fileName = basename(client_message->filePath);
 
     // Prepend ROOTDIR to the beginning of the filePath in client_message
     char rfsFilePath[256 + sizeof(ROOTDIR)];
@@ -314,18 +404,27 @@ int remove_handler(removeMsg_t* client_message){
 
     // Lock the mutex before accessing the file
     pthread_mutex_lock(&mutex);
-
+    printf("rfsFilePath: %s\n", rfsFilePath);
     // Attempt to delete the file
     if (remove(rfsFilePath) == 1) {
         pthread_mutex_unlock(&mutex);
         return 0;
     }
-
-    // Remove metadata file
+    
     char metadataFilePath[256 + sizeof(METADIR) + 12];
-    sprintf(metadataFilePath, "%smetadata_%s", METADIR, client_message->filePath);
+    // If a path was provided instead of just a file name
+    if(strcmp(fileName, directoryPath) != 0 )
+    {
+      // Remove metadata file
+      sprintf(metadataFilePath, "%s%s/metadata_%s", METADIR, directoryPath, fileName);
+    }
+    // Otherwise it was just a file name that was provided
+    else
+    {
+      sprintf(metadataFilePath, "%smetadata_%s", METADIR, fileName);
+    }
     remove(metadataFilePath);
-
+    printf("metadataFilePath: %s\n", metadataFilePath);
     // Remove versioned files
     int version = 0;
     char versFilePath[256 + sizeof(VERSDIR) + 5];
@@ -353,8 +452,7 @@ int remove_handler(removeMsg_t* client_message){
  *          0 on failed ls
  * 
  */
-int ls_handler(lsMsg_t* client_message, int client_socket)
-{
+int ls_handler(lsMsg_t* client_message, int client_socket) {
   int status = 0;
 
   // Prepend ROOTDIR to the beginning of the filePath in client_message
@@ -401,21 +499,58 @@ int ls_handler(lsMsg_t* client_message, int client_socket)
  * @return: 0 on successful write
  *
  */
-int write_metadata(const char *origFilePath, const metadata_t *metadata) {
-    // Construct metadata file path
-    char metadataFilePath[256 + sizeof(METADIR) + 12];
-    sprintf(metadataFilePath, "%smetadata_%s", METADIR, origFilePath);
+int write_metadata(char *origFilePath, const metadata_t *metadata) {
+  // Get the directory part of the original file path
+  char directoryPath[256];
+  strncpy(directoryPath, origFilePath, sizeof(directoryPath));
+  char *lastSlash = strrchr(directoryPath, '/');
+  if (lastSlash != NULL) {
+      *lastSlash = '\0';  // Remove the file name
+  }
 
-    // Write to metadata file
-    FILE *metadataFile = fopen(metadataFilePath, "a");  // Open in append mode
-    if (metadataFile == NULL) {
-        perror("Error opening metadata file");
-        return -1 ;
+  // Get the file name
+  char *fileName = basename(origFilePath);
+
+  // Get the necessary path in the metadata directory
+  char metadataFilePath[256 + sizeof(METADIR) + 12];
+
+  // If a path was provided instead of just a file name
+  if(strcmp(fileName, directoryPath) != 0 )
+  {
+    // Prepend METADIR to the beginning of the directory path
+    char metadataDirPath[256 + sizeof(METADIR)];
+    strcpy(metadataDirPath, METADIR);
+    strcat(metadataDirPath, directoryPath);
+
+    // Check if the directory exists, and if not, create it
+    struct stat st = {0};
+    if (stat(metadataDirPath, &st) == -1) {
+        if (mkdir(metadataDirPath, 0700) == -1) {
+            perror("mkdir failed");
+            pthread_mutex_unlock(&mutex);
+            return -1;  // Failed to create the directory
+        }
     }
-    fprintf(metadataFile, "%d %s\n", metadata->versionNumber, metadata->timestamp);
-    fclose(metadataFile);
+    // Construct metadata file path
+    sprintf(metadataFilePath, "%s/metadata_%s", metadataDirPath, fileName);
+  }
+  // Otherwise it was just a file name that was provided
+  else
+  {
+    // Construct metadata file path
+    sprintf(metadataFilePath, "%smetadata_%s", METADIR, fileName);
+  }
 
-    return 0;
+  // Write to metadata file
+  FILE *metadataFile = fopen(metadataFilePath, "a");  // Open in append mode
+  if (metadataFile == NULL) {
+      perror("Error opening metadata file");
+      return -1 ;
+  }
+  fprintf(metadataFile, "%d %s\n", metadata->versionNumber, metadata->timestamp);
+  fclose(metadataFile);
+
+  return 0;
 }
 
 /*
@@ -428,10 +563,48 @@ int write_metadata(const char *origFilePath, const metadata_t *metadata) {
  *          -1 on failed send
  * 
  */
-int send_metadata(const char *origFilePath, int client_socket) {
+int send_metadata(char *origFilePath, int client_socket) {
+  // Get the directory part of the original file path
+  char directoryPath[256];
+  strncpy(directoryPath, origFilePath, sizeof(directoryPath));
+  char *lastSlash = strrchr(directoryPath, '/');
+  if (lastSlash != NULL)
+  {
+      *lastSlash = '\0';  // Remove the file name
+  }
+
+  // Get the file name
+  char *fileName = basename(origFilePath);
+
+  // Get the necessary path in the metadata directory
+  char metadataFilePath[256 + sizeof(METADIR) + 12];
+
+  // If a path was provided instead of just a file name
+  if(strcmp(fileName, directoryPath) != 0 )
+  {
+    // Prepend METADIR to the beginning of the directory path
+    char metadataDirPath[256 + sizeof(METADIR)];
+    strcpy(metadataDirPath, METADIR);
+    strcat(metadataDirPath, directoryPath);
+
+    // Check if the directory exists, and if not, create it
+    struct stat st = {0};
+    if (stat(metadataDirPath, &st) == -1) {
+        if (mkdir(metadataDirPath, 0700) == -1) {
+            perror("mkdir failed");
+            pthread_mutex_unlock(&mutex);
+            return -1;  // Failed to create the directory
+        }
+    }
     // Construct metadata file path
-    char metadataFilePath[256 + sizeof(METADIR) + 12];
-    sprintf(metadataFilePath, "%smetadata_%s", METADIR, origFilePath);
+    sprintf(metadataFilePath, "%s/metadata_%s", metadataDirPath, fileName);
+    }
+    // Otherwise it was just a file name that was provided
+    else
+    {
+      // Construct metadata file path
+      sprintf(metadataFilePath, "%smetadata_%s", METADIR, fileName);
+    }
 
     // Open metadata file
     FILE *metadataFile = fopen(metadataFilePath, "r");

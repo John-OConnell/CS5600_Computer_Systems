@@ -305,6 +305,8 @@ int rfs_ls(char* remote_file_path){
         return -1;
     }
 
+    printf("File: %s\n", remote_file_path);
+    
     metadata_t receivedMetadata;
 
     // Receive metadata from server

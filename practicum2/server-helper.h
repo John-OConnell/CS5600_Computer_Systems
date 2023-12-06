@@ -24,8 +24,8 @@ int remove_handler(removeMsg_t* client_message);
 
 int ls_handler(lsMsg_t* client_message, int client_socket);
 
-int write_metadata(const char *origFilePath, const metadata_t *metadata);
+int write_metadata(char *origFilePath, const metadata_t *metadata);
 
-int send_metadata(const char *origFilePath, int client_socket);
+int send_metadata(char *origFilePath, int client_socket);
 
 #endif

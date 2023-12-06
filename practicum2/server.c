@@ -18,7 +18,8 @@
 #include "server-helper.h"
 
 // Define constants for the server IP and port
-#define SERVER_IP "127.0.0.1"
+//#define SERVER_IP "127.0.0.1"
+#define SERVER_IP "192.168.18.26"
 #define SERVER_PORT 9002
 
 // Global variables to account for STOP command
@@ -55,7 +56,6 @@ void* monitor_thread(void* arg) {
         // Add a sleep to avoid busy-waiting
         usleep(100000);  // Sleep for 100 milliseconds
     }
-    return NULL;
 }
 
 int main(void)
@@ -110,7 +110,7 @@ int main(void)
     client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_size);
     if (client_socket < 0)
     {
-      perror("Error accepting client connection\n");
+      perror("Aborting accepting new clients");
       return -1;
     }
 
