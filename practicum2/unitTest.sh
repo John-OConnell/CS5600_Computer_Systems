@@ -80,11 +80,13 @@ for ((i=0; i<4; i++)); do
     filename="v${i}_test.txt"
     echo "File: $filename"
     # Run tasks in the background
-    cat rfsys/vers/$filename
+    ./rfs GET test.txt ${i}
+    cat test.txt
     echo
 done
 echo "File: test.txt"
-cat rfsys/test.txt
+./rfs GET test.txt test.txt
+cat test.txt
 echo
 echo
 
