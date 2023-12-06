@@ -1,5 +1,4 @@
 ## Overview
-
 This is my implementation of *Practicum II - Server Based Versioning File System* for CS5600 F23. \
 A description of this assignment is as follows:
 
@@ -20,6 +19,7 @@ about a file or folder, and deleting a file or folder).*
 - client-helper.c     - implementation of the client helper functions
 - msgTypes.h          - message struct definitions
 - rfsys/              - the root directory of the remote file system
+- testFiles/          - text files used for testing
 - Makefile            - makefile used to build project executables
 
 ## Instructions to Run
@@ -27,5 +27,6 @@ Running "make" in the project directory will build all executables. The server c
 intereact with the remote file system are all run through the "./rfs" executable. Running "./rfs HELP" will display the help menu with options\
 on the different commands that can be run. The server and client IP address and ports can be configured as global variables in the server.c\
 and client-helper.c files, respectively. A unit test shell script is provided, which can be run with "./unitTest.sh". It's important to note\
-that you must start the server before running the shell script, or the execution will fail. Running "make clean" will remove all executalbes,\
-and running "make rfsysclean" will remove any new files added to the remote file system. 
+that you must start the server before running the shell script, or the execution will fail. Additionally, it is recommended to run the shell\
+script with a clean rfsys/ directory to ensure proper testing. Running "make clean" will remove all executalbes, and running "make rfsysclean" 
+will remove any new files added to the remote file system. 
