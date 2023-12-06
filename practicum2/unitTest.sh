@@ -1,46 +1,79 @@
 #!/bin/bash
 
-# Define paths and filenames
-FOO_FILE="foo.txt"
-NEW_FOO_FILE="newfoo.txt"
-
-
-# Function to check file presence and size
-check_file() {
-    local file=$1
-    local expected_size=$2
-
-    if [ -e "$file" ]; then
-        echo "File $file exists"
-        
-        actual_size=$(ls -l "$file" | awk '{print $5}')
-
-        if [ "$actual_size" -eq "$expected_size" ]; then
-            echo "File size is correct"
-        else
-            echo "File size is incorrect"
-        fi
-    else
-        echo "File $file does not exist"
-    fi
-}
-
 # Test performing WRITE operation
-./rfs WRITE "$FOO_FILE"
-foo_size=$(stat -s %s "$FOO_FILE")
-check_file "rfsys/foo.txt" "$foo_size"
+echo "----------Test WRITE Command----------"
+echo "Writing foo.txt :"
+./rfs WRITE foo.txt
+if [ -e rfsys/foo.txt ]; then
+        echo "File foo.txt exists on remote server"
+fi
 
-# Perform GET operation
-#perform_get
+echo
+echo "Writing foo.txt to folder new/ :"
+./rfs WRITE foo.txt new/foo.txt
+if [ -e rfsys/new/foo.txt ]; then
+        echo "File foo.txt exists in folder new/ on remote server"
+fi
+echo
 
-# Check if the file exists and has the correct size
-#check_file "$GET_FILE"  # Replace with the expected size
+# Test performing GET operation
+echo "----------Test GET Command----------"
+echo "Getting foo.txt, saving to myFoo.txt :"
+./rfs GET foo.txt myFoo.txt
+if [ -e myFoo.txt ]; then
+        echo "File myFoo.txt exists locally"
+fi
 
-# Perform REMOVE operation
-#perform_remove
+echo
+echo "Getting new/foo.txt, saving to myNewFoo.txt :"
+./rfs GET new/foo.txt myNewFoo.txt
+if [ -e myNewfoo.txt ]; then
+        echo "File myNewFoo.txt exists locally"
+fi
+echo
 
-# Check if the file is removed
-#check_file "$REMOVE_FILE"  # Replace with the expected size
+# Test performing versioned GET operation
+echo "----------Test GET Command - VERSIONED----------"
+echo "Currently foo.txt contains the following :"
+cat foo.txt
+echo
+echo
+echo "We will write this new version to foo.txt :"
+cat newfoo.txt
+echo
+echo
+echo "Writing new version of foo.txt :"
+./rfs WRITE newfoo.txt foo.txt
+echo "Here is the latest version using the GET command :"
+./rfs GET foo.txt getVersFoo.txt
+cat getVersFoo.txt
+echo
+echo
+echo "And here is the original version using the GET command :"
+./rfs GET foo.txt getVersFoo.txt 0
+cat getVersFoo.txt
+echo
+echo
 
-# Perform LS operation
-#perform_ls
+# Test performing LS operation
+echo "----------Test LS Command----------"
+./rfs LS foo.txt
+echo
+./rfs LS new/foo.txt
+echo
+
+# Test performing RM operation
+echo "----------Test RM Command----------"
+echo "Removing foo.txt :"
+./rfs RM foo.txt
+if [ ! -e rfsys/foo.txt ]; then
+        echo "File foo.txt does NOT exist on remote server"
+fi
+
+echo
+echo "Removing foo.txt from folder new/ :"
+./rfs RM new/foo.txt
+if [ ! -e rfsys/new/foo.txt ]; then
+        echo "File foo.txt does NOT exist in folder new/ on remote server"
+fi
+echo
