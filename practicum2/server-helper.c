@@ -429,13 +429,28 @@ int remove_handler(removeMsg_t* client_message){
 
     // Remove versioned files
     int version = 0;
-    char versFilePath[256 + sizeof(VERSDIR) + 5];
-    sprintf(versFilePath, "%sv%d_%s", VERSDIR, version, client_message->filePath);
+    char versFilePath[256 + sizeof(VERSDIR) + 12];
+    // If a path was provided instead of just a file name
+    if(strcmp(fileName, directoryPath) != 0 )
+    {
+      sprintf(versFilePath, "%s%s/v%d_%s", VERSDIR, directoryPath, version, fileName);
 
-    while (access(versFilePath, F_OK) == 0) {
-        remove(versFilePath);
-        version++;
-        sprintf(versFilePath, "%sv%d_%s", VERSDIR, version, client_message->filePath);
+      while (access(versFilePath, F_OK) == 0) {
+          remove(versFilePath);
+          version++;
+          sprintf(versFilePath, "%s%s/v%d_%s", VERSDIR, directoryPath, version, fileName);
+      }
+    }
+    // Otherwise it was just a file name that was provided
+    else
+    {
+      sprintf(versFilePath, "%sv%d_%s", VERSDIR, version, fileName);
+
+      while (access(versFilePath, F_OK) == 0) {
+          remove(versFilePath);
+          version++;
+          sprintf(versFilePath, "%sv%d_%s", VERSDIR, version, fileName);
+      }
     }
 
     //  Unlock the mutex after the file has been removed
